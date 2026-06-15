@@ -11,7 +11,7 @@
 ![Status](https://img.shields.io/badge/status-active-success)
 ![License](https://img.shields.io/badge/license-MIT-yellow)
 
-[Paper Summary](docs/PAPER_SUMMARY.md) · [Gap &amp; Fix](docs/GAP_AND_FIX.md) · [Viva Q&amp;A](docs/VIVA_QA.md) · [Slides](slides/PoisonedRAG_Group6_Presentation.pptx)
+[Paper Summary](docs/paper_summary.md) · [Gap &amp; Fix](docs/gap_and_fix.md) · [Viva Q&amp;A](docs/viva_qa.md) · [Slides](slides/PoisonedRAG_Group6_Presentation.pptx)
 
 </div>
 
@@ -46,7 +46,7 @@ The result: attack success rate drops from ~90% (undefended) to ~13% (RAG-Shield
 
 RAG (Retrieval-Augmented Generation) makes an LLM answer using documents pulled from an external knowledge base, fixing stale knowledge and reducing hallucination. PoisonedRAG is the **first knowledge-corruption attack** on RAG: an attacker injects just **5 malicious documents per target question** into a KB of **millions** of clean documents, and induces the LLM to output an **attacker-chosen wrong answer** — achieving a **~90% attack success rate**. Each poison document is split into two parts, `P = S + I`: `S` is a retrieval trigger (gets the doc retrieved), `I` is the injection (misleads the LLM). The attack works in both black-box (LLM-generated poison, realistic) and white-box (gradient-optimized) settings, across many LLMs, retrievers, and datasets.
 
-Full details: [`docs/PAPER_SUMMARY.md`](docs/PAPER_SUMMARY.md)
+Full details: [`docs/paper_summary.md`](docs/paper_summary.md)
 
 ---
 
@@ -56,7 +56,7 @@ The authors evaluated the standard defenses (perplexity filtering, query paraphr
 
 **Our gap statement:** single-layer defenses are a single point of failure. We need **defense-in-depth** that screens documents at *ingest*, at *retrieval*, and at *generation*.
 
-Full analysis: [`docs/GAP_AND_FIX.md`](docs/GAP_AND_FIX.md)
+Full analysis: [`docs/gap_and_fix.md`](docs/gap_and_fix.md)
 
 ---
 
@@ -121,9 +121,9 @@ Full analysis: [`docs/GAP_AND_FIX.md`](docs/GAP_AND_FIX.md)
 Major-Project-PoisonedRAG/
 ├── README.md                  <- you are here
 ├── docs/
-│   ├── PAPER_SUMMARY.md        <- the paper, explained for the team
-│   ├── GAP_AND_FIX.md          <- what's missing + what we add
-│   └── VIVA_QA.md              <- 60+ Q&A to prep every member
+│   ├── paper_summary.md        <- the paper, explained for the team
+│   ├── gap_and_fix.md          <- what's missing + what we add
+│   └── viva_qa.md              <- 60+ Q&A to prep every member
 ├── paper/                     <- the PDF + notes
 ├── knowledge_base/            <- build_kb.py, build_index.py
 ├── baseline/                  <- target_questions.json, generate_poison.py, inject_poison.py, measure_baseline_asr.py
@@ -142,11 +142,11 @@ Major-Project-PoisonedRAG/
 | # | Step | Status | Where |
 |---|------|--------|-------|
 | 1 | Update Excel with paper details | ☐ | course sheet |
-| 2 | Read the paper | ☐ | `docs/PAPER_SUMMARY.md` |
-| 3 | Analyze the problem | ☐ | `docs/PAPER_SUMMARY.md` §Problem |
-| 4 | Understand the proposed solution | ☐ | `docs/PAPER_SUMMARY.md` §Attack |
-| 5 | Identify the gap | ☐ | `docs/GAP_AND_FIX.md` |
-| 6 | Propose our own solution | ☐ | `docs/GAP_AND_FIX.md` §RAG-Shield |
+| 2 | Read the paper | ☐ | `docs/paper_summary.md` |
+| 3 | Analyze the problem | ☐ | `docs/paper_summary.md` §Problem |
+| 4 | Understand the proposed solution | ☐ | `docs/paper_summary.md` §Attack |
+| 5 | Identify the gap | ☐ | `docs/gap_and_fix.md` |
+| 6 | Propose our own solution | ☐ | `docs/gap_and_fix.md` §RAG-Shield |
 | 7 | Implement it | ☐ | `defense/`, `frontend/` |
 | 8 | Demonstrate effectiveness | ☐ | `evaluation/`, live demo |
 
@@ -156,7 +156,7 @@ Major-Project-PoisonedRAG/
 
 | Member | ID | Role |
 |--------|----|----|
-| **Jeenal Chaudhary** | G25AIT2027 | Inspiration & Mentor · Intro + RAG background |
+| Jeenal Chaudhary | G25AIT2027 | Intro + RAG background |
 | Amit Singh | G25AIT2007 | Problem & threat model · Research |
 | Sharvan Vittala | G25AIT2099 | Attack mechanics · Ring 1 |
 | Sudeb Ghosh | G25AIT2113 | Attack deep-dive · Adversarial testing |
