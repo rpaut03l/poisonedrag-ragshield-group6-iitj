@@ -1,6 +1,6 @@
 <a id="top"></a>
 
-[Repo Home](../README.md) · [Docs Index](README.md) · **Paper Summary** · [Gap & Fix](GAP_AND_FIX.md) · [Viva Q&A](VIVA_QA.md)
+[Repo Home](../README.md) · [Docs Index](README.md) · **Paper Summary** · [Gap & Fix](gap_and_fix.md) · [Viva Q&A](viva_qa.md)
 
 ---
 
@@ -144,11 +144,11 @@ The authors evaluated the obvious defenses and showed all are **insufficient**:
 
 > *"PoisonedRAG is the first attack to weaponize the RAG knowledge base: 5 fake documents among millions achieve 90% attack success, and the paper's own tests show existing defenses can't stop it."*
 
-Next: see [`GAP_AND_FIX.md`](GAP_AND_FIX.md) for what we build on top of this.
+Next: see [`gap_and_fix.md`](gap_and_fix.md) for what we build on top of this.
 
 
 ---
 
-[Repo Home](../README.md) · [Docs Index](README.md) · **Paper Summary** · [Gap & Fix](GAP_AND_FIX.md) · [Viva Q&A](VIVA_QA.md)
+[Repo Home](../README.md) · [Docs Index](README.md) · **Paper Summary** · [Gap & Fix](gap_and_fix.md) · [Viva Q&A](viva_qa.md)
 
 [↑ Back to top](#top)

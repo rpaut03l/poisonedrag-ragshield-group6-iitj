@@ -1,6 +1,6 @@
 <a id="top"></a>
 
-[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](PAPER_SUMMARY.md) · **Gap & Fix** · [Viva Q&A](VIVA_QA.md)
+[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](paper_summary.md) · **Gap & Fix** · [Viva Q&A](viva_qa.md)
 
 ---
 
@@ -51,10 +51,10 @@ RAG-Shield is a **3-ring, defense-in-depth** pipeline. Poison must defeat **all 
   Document being added                Query arriving              Answer being formed
         |                                   |                            |
         v                                   v                            v
-  +-------------+                   +----------------+          +------------------+
-  |   RING 1    |                   |     RING 2     |          |      RING 3      |
+  +-------------+                   +----------------+          +-------------------+
+  |   RING 1    |                   |     RING 2     |          |      RING 3       |
   | Ingest Guard| ----------------> |Retrieval Scorer| -------> |Cross-LLM Consensus|
-  +-------------+                   +----------------+          +------------------+
+  +-------------+                   +----------------+          +-------------------+
    perplexity                        provenance/trust            3 LLMs vote
    embedding-outlier                 inter-doc consistency       disagreement => 
    pattern match                     trust re-ranking            re-retrieve w/o suspects
@@ -150,6 +150,6 @@ Runs at **answer time**.
 
 ---
 
-[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](PAPER_SUMMARY.md) · **Gap & Fix** · [Viva Q&A](VIVA_QA.md)
+[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](paper_summary.md) · **Gap & Fix** · [Viva Q&A](viva_qa.md)
 
 [↑ Back to top](#top)
