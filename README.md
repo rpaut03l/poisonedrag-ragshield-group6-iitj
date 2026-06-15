@@ -162,7 +162,7 @@ Major-Project-PoisonedRAG/
 | Sudeb Ghosh | G25AIT2113 | Attack deep-dive · Adversarial testing |
 | Kosuru Yuvaraj | G25AIT2054 | Gap analysis · Ring 2 |
 | Pujan Chakraborty | G25AIT2076 | RAG-Shield design · Evaluation |
-| Rohit Patel | G25AIT2089 | Tech lead · Architecture · Implementation · Live demo |
+| Rohit Patel | G25AIT2089 | Architecture · Implementation · Live demo |
 | Vishnu Priya | G25AIT2128 | Frontend · Report · Demo video |
 
 ---
