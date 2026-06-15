@@ -1,6 +1,6 @@
 <a id="top"></a>
 
-[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](PAPER_SUMMARY.md) · **Gap & Fix** · [Viva Q&A](VIVA_QA.md)
+[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](paper_summary.md) · **Gap & Fix** · [Viva Q&A](viva_qa.md)
 
 ---
 
@@ -150,6 +150,6 @@ Runs at **answer time**.
 
 ---
 
-[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](PAPER_SUMMARY.md) · **Gap & Fix** · [Viva Q&A](VIVA_QA.md)
+[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](paper_summary.md) · **Gap & Fix** · [Viva Q&A](viva_qa.md)
 
 [↑ Back to top](#top)
