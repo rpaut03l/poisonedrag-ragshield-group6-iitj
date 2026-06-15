@@ -1,6 +1,6 @@
 <a id="top"></a>
 
-[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](PAPER_SUMMARY.md) · [Gap & Fix](GAP_AND_FIX.md) · **Viva Q&A**
+[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](paper_summary.md) · [Gap & Fix](gap_and_fix.md) · **Viva Q&A**
 
 ---
 
@@ -220,6 +220,6 @@ Adaptive-attacker evaluation, scale to a million-doc KB, latency/cost optimizati
 
 ---
 
-[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](PAPER_SUMMARY.md) · [Gap & Fix](GAP_AND_FIX.md) · **Viva Q&A**
+[Repo Home](../README.md) · [Docs Index](README.md) · [Paper Summary](paper_summary.md) · [Gap & Fix](gap_and_fix.md) · **Viva Q&A**
 
 [↑ Back to top](#top)
