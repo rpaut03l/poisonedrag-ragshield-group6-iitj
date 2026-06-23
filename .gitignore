@@ -35,3 +35,7 @@ models/
 
 # Keep
 !.streamlit/config.toml
+
+# private study notes — never commit
+TEACHING_NOTES.md
+*.private.md
