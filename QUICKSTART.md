@@ -1,101 +1,113 @@
 <a id="top"></a>
 
-[Repo Home](README.md) · [Docs](docs/) · **Quickstart**
+[Repo Home](README.md) · [Project Guide](PROJECT_GUIDE.md) · **Quickstart**
 
 ---
 
-# Quickstart — RAG-Shield Demo
+# Quickstart — RAG-Shield
 
-Get the demo running in **under 2 minutes**. No API keys needed for demo mode.
+Three ways to run it. **Demo** needs nothing. **Lite-Live** runs real local LLMs and is the recommended way to present. **Full-Live** is the heavy FAISS path.
 
-## 0. Fix the venv first (you hit exit code 126)
+## 0. One-time setup
 
-Your earlier `python3.11 -m venv .venv && source .venv/bin/activate` returned **126**
-(venv half-created / not executable). Rebuild it cleanly:
+Use **Python 3.11** (3.9 breaks the install). On macOS: `brew install python@3.11`.
 
 ```bash
-cd ~/Desktop/MTech\ AI\ IIT-Jodhpur*/Cohort-2-Trimester-2/Cyber-Security_ES/Major-Project-PoisonedRAG
+cd <project-folder>
 
-# nuke the broken venv and remake it
-rm -rf .venv
+# build the venv
 python3.11 -m venv .venv
-source .venv/bin/activate
 
-# sanity: prompt should now show (.venv) and this should print a 3.11 path
-which python && python --version
+# If `source .venv/bin/activate` returns exit code 126 (a known issue on
+# iCloud-synced Desktop paths), DON'T fight it — just call the venv python
+# directly by path for every command, e.g. `.venv/bin/python ...`
+
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r requirements-demo.txt   # demo deps (light)
 ```
 
-If `python3.11` itself is missing:
-```bash
-brew install python@3.11
-```
-
-## 1. Install dependencies
+## 1. Demo mode (instant, no keys, never crashes)
 
 ```bash
-pip install --upgrade pip
-pip install -r requirements.txt
+DEMO_MODE=1 .venv/bin/python -m streamlit run frontend/app.py --server.port 8502
 ```
+Open **http://localhost:8502**. Sidebar pages:
+Attack Demo → Side-by-Side → Defense Demo → Forensic Explorer → Results Dashboard.
 
-(Demo mode only strictly needs: `streamlit pandas scikit-learn numpy python-dotenv`.)
-
-## 2. Run the demo (instant, no keys)
-
+Terminal check:
 ```bash
-chmod +x run_demo.sh
-./run_demo.sh
+DEMO_MODE=1 .venv/bin/python demo_cli.py "Who founded Tesla Motors?"
 ```
-
-Then open **http://localhost:8501**. Use the sidebar pages:
-Attack Demo → Defense Demo → Side-by-Side → Forensic Explorer → Results Dashboard.
-
-## 3. Quick terminal check (optional)
-
-```bash
-DEMO_MODE=1 python demo_cli.py "Who founded Tesla Motors?"
-DEMO_MODE=1 python evaluation/run_experiments.py
-```
-
 Expected: ASR **~100% no-defense → ~0% with RAG-Shield**.
 
 ---
 
-## 4. Switch to LIVE mode (real FAISS + Claude + LLaMA)
+## 2. Lite-Live mode (real local LLMs — recommended for the live demo)
 
-Demo mode uses a lightweight TF-IDF retriever + mock LLMs so it always runs.
-To use your real 5000-doc FAISS index and real LLMs:
+Real Ollama models answer in Ring 3, but a lightweight TF-IDF retriever is used
+instead of torch/faiss — so it is **fast and does not segfault on Apple Silicon**.
 
 ```bash
-# 1) make sure your real KB + index exist
-ls knowledge_base/vector_store/kb.faiss knowledge_base/vector_store/kb_meta.json
+# full deps (adds anthropic/openai clients; torch/faiss installed but NOT loaded in lite-live)
+.venv/bin/python -m pip install -r requirements.txt
 
-# 2) fill .env (copy from .env.example) with at least ANTHROPIC_API_KEY
-cp .env.example .env && nano .env
+# pull 2-3 small local models for the Ring-3 panel
+ollama pull llama3.2:3b && ollama pull phi4-mini && ollama pull gemma3:4b
+ollama serve &            # leave running
 
-# 3) (optional) start local LLaMA for a 2nd vendor
-brew install ollama && ollama pull llama3.1:8b && ollama serve &
-
-# 4) run in live mode
-DEMO_MODE=0 ./run_demo.sh
+# launch (the helper sets all Mac-safety env vars + watcher off)
+./run_live.sh             # http://localhost:8502
 ```
 
-In live mode:
-- Retriever loads `knowledge_base/vector_store/kb.faiss` via sentence-transformers.
-- Ring 3 panel = Claude + LLaMA (+ Azure GPT if you set the Azure vars).
-- Everything else is identical.
+`.env` for lite-live (local only, no paid API needed):
+```
+OLLAMA_BASE_URL=http://localhost:11434/v1
+OLLAMA_MODEL=llama3.1:8b
+OLLAMA_PANEL=llama3.2:3b,phi4-mini:latest,gemma3:4b
+VLLM_BASE_URL=
+```
+No inline `#` comments on value lines — they break parsing.
+
+Check what's live before presenting:
+```bash
+DEMO_MODE=0 .venv/bin/python backends_status.py
+```
+
+Watch real-time logs on a second screen:
+```bash
+./tail_logs.sh            # tails logs/ragshield.log
+```
 
 ---
+
+## 3. Full-Live mode (real FAISS + sentence-transformers)
+
+Heavy path; can segfault on Apple Silicon. Only on a stable/Linux/GPU box:
+```bash
+DEMO_MODE=0 RETRIEVER=faiss .venv/bin/python -m streamlit run frontend/app.py --server.port 8502
+```
+
+---
+
+## Notes
+
+- **vLLM** needs an NVIDIA GPU; it will not run on a Mac. Use extra Ollama models for Ring 3.
+- **Claude API** needs paid credits (separate from a Claude Pro subscription).
+- After a restart, use the Streamlit "..." menu → **Clear cache** so old answers don't linger.
 
 ## What runs where
 
 | Command | What it does |
 |---------|--------------|
-| `./run_demo.sh` | Launch the 5-page Streamlit demo |
-| `python3.11 demo_cli.py "<question>"` | One-question terminal demo |
-| `python3.11 evaluation/run_experiments.py` | Full ASR table + writes `evaluation/results/asr_results.json` |
+| `DEMO_MODE=1 ... streamlit run frontend/app.py` | demo mode UI (mock LLMs) |
+| `./run_live.sh` | lite-live UI (real local LLMs, watcher off, port 8502) |
+| `./tail_logs.sh` | live log feed for a second screen |
+| `backends_status.py` | ping each backend, show LIVE/DOWN |
+| `demo_cli.py "<question>"` | one-question terminal demo |
+| `evaluation/run_experiments.py` | full ASR table |
 
 ---
 
-[Repo Home](README.md) · [Docs](docs/) · **Quickstart**
+[Repo Home](README.md) · [Project Guide](PROJECT_GUIDE.md) · **Quickstart**
 
 [↑ Back to top](#top)

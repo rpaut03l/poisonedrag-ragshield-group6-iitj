@@ -39,6 +39,13 @@ class LLMBackend:
                 api_key="ollama")
             self.model = model or os.getenv("OLLAMA_MODEL", "llama3.1:8b")
             self.name = name or f"LLaMA ({self.model})"
+        elif mode == "vllm":
+            from openai import OpenAI
+            self._client = OpenAI(
+                base_url=os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1"),
+                api_key=os.getenv("VLLM_API_KEY", "vllm"))
+            self.model = model or os.getenv("VLLM_MODEL", "meta-llama/Meta-Llama-3.1-8B-Instruct")
+            self.name = name or f"vLLM ({self.model})"
         elif mode == "azure_openai":
             from openai import AzureOpenAI
             self._client = AzureOpenAI(
@@ -53,15 +60,15 @@ class LLMBackend:
             raise ValueError(f"Unknown LLM mode: {mode}")
 
     # -- low-level completion (real backends) --
-    def _complete(self, prompt: str, max_tokens: int = 200, temperature: float = 0.2) -> str:
+    def _complete(self, prompt: str, max_tokens: int = 64, temperature: float = 0.0) -> str:
         if self.mode == "anthropic":
             r = self._client.messages.create(
-                model=self.model, max_tokens=max_tokens,
+                model=self.model, max_tokens=max_tokens, timeout=20,
                 messages=[{"role": "user", "content": prompt}])
             return r.content[0].text
         # OpenAI-compatible (ollama / azure)
         r = self._client.chat.completions.create(
-            model=self.model, max_tokens=max_tokens, temperature=temperature,
+            model=self.model, max_tokens=max_tokens, temperature=temperature, timeout=20,
             messages=[{"role": "user", "content": prompt}])
         return r.choices[0].message.content
 
@@ -70,6 +77,9 @@ class LLMBackend:
                             candidates: Optional[list[str]] = None) -> str:
         if self.mode == "mock":
             return self._mock_answer(question, context_docs, candidates)
+        from .raglog import log
+        import time as _t; _t0 = _t.time()
+        log(f"  [LLM {self.name}] querying ({len(context_docs)} docs)...")
 
         context = "\n\n".join(
             f"[Doc {i+1}] {d.get('title','')}\n{d.get('text','')}"
@@ -78,7 +88,9 @@ class LLMBackend:
             "Answer the question using ONLY the context documents. "
             "Be concise (one short sentence).\n\n"
             f"Context:\n{context}\n\nQuestion: {question}\n\nAnswer:")
-        return self._complete(prompt).strip()
+        out = self._complete(prompt).strip()
+        log(f"  [LLM {self.name}] -> {out[:50]!r} ({_t.time()-_t0:.1f}s)")
+        return out
 
     # -- heuristic mock: lets the demo run with zero dependencies --
     def _mock_answer(self, question: str, context_docs: list[dict],

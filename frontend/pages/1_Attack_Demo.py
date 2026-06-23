@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "components"))
-from _shared import get_shield, get_targets, doc_row
+from _shared import get_shield, get_targets, doc_row, cached_answer, attack_succeeded, is_refusal, show_log_panel
 import streamlit as st
 
 st.set_page_config(page_title="Attack Demo", page_icon="🔴", layout="wide")
@@ -16,7 +16,7 @@ t = next(x for x in targets if x["question"] == choice)
 cands = [t["true_answer"], t["wrong_answer"]]
 
 if st.button("Run attack (no defense)", type="primary"):
-    out = shield.answer(choice, defense=False, candidates=cands)
+    out = cached_answer(choice, False, t["true_answer"], t["wrong_answer"])
     tr = out["trace"]
     c1, c2 = st.columns(2)
     with c1:
@@ -29,7 +29,7 @@ if st.button("Run attack (no defense)", type="primary"):
         st.markdown("#### Result")
         st.markdown(f"True answer: **{t['true_answer']}**")
         st.markdown(f"Attacker's target: **{t['wrong_answer']}**")
-        fooled = t["wrong_answer"].lower() in out["answer"].lower()
+        fooled = attack_succeeded(out["answer"], t["wrong_answer"], t["true_answer"])
         st.markdown(f"### LLM said: {'🔴 ' if fooled else '🟢 '}`{out['answer']}`")
         if fooled:
             st.error("ATTACK SUCCEEDED — the LLM returned the attacker's answer.")
@@ -37,3 +37,5 @@ if st.button("Run attack (no defense)", type="primary"):
             st.success("Attack did not land this time.")
         st.caption("The poison docs out-rank the clean ones in retrieval, so they "
                    "dominate the context the LLM reads.")
+
+st.divider(); show_log_panel(n=30)

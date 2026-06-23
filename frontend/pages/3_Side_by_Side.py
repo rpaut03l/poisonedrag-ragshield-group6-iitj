@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "components"))
-from _shared import get_shield, get_targets
+from _shared import get_shield, get_targets, cached_answer, attack_succeeded, answer_is_correct, is_refusal
 import streamlit as st
 
 st.set_page_config(page_title="Side by Side", page_icon="⚖️", layout="wide")
@@ -14,10 +14,10 @@ t = next(x for x in targets if x["question"] == choice)
 cands = [t["true_answer"], t["wrong_answer"]]
 
 if st.button("Compare", type="primary"):
-    nd = shield.answer(choice, defense=False, candidates=cands)
-    wd = shield.answer(choice, defense=True, candidates=cands)
-    fooled = t["wrong_answer"].lower() in nd["answer"].lower()
-    defended = t["wrong_answer"].lower() not in wd["answer"].lower()
+    nd = cached_answer(choice, False, t["true_answer"], t["wrong_answer"])
+    wd = cached_answer(choice, True, t["true_answer"], t["wrong_answer"])
+    fooled = attack_succeeded(nd["answer"], t["wrong_answer"], t["true_answer"])
+    defended = answer_is_correct(wd["answer"], t["true_answer"])
 
     a, b = st.columns(2)
     with a:
