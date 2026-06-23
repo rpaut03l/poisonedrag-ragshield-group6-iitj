@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 <div align="center">
 
 # PoisonedRAG + RAG-Shield
@@ -11,7 +13,7 @@
 ![Status](https://img.shields.io/badge/status-active-success)
 ![License](https://img.shields.io/badge/license-MIT-yellow)
 
-[Paper Summary](docs/paper_summary.md) · [Gap &amp; Fix](docs/gap_and_fix.md) · [Viva Q&amp;A](docs/viva_qa.md) · [Slides](slides/PoisonedRAG_Group6_Presentation.pptx)
+[Paper Summary](docs/paper_summary.md) · [Gap &amp; Fix](docs/gap_and_fix.md) · [Viva Q&amp;A](docs/viva_qa.md) · [Project Guide](PROJECT_GUIDE.md) · [Quickstart](QUICKSTART.md) · [Slides](slides/)
 
 </div>
 
@@ -19,145 +21,409 @@
 
 ## Contents
 
-- [1. What this project is](#1-what-this-project-is)
-- [2. The paper in one paragraph](#2-the-paper-in-one-paragraph)
-- [3. The gap we fill](#3-the-gap-we-fill)
-- [4. Our solution — RAG-Shield](#4-our-solution--rag-shield-3-ring-defense)
-- [5. Tech stack](#5-tech-stack)
-- [6. Repository structure](#6-repository-structure)
-- [7. The 8 steps the professor requires](#7-the-8-steps-the-professor-requires)
-- [8. Team — Group 6](#8-team--group-6)
-- [9. Links](#9-links)
+- [1. tldr](#1-tldr)
+- [2. the attack-poisonedrag](#2-the-attack-poisonedrag)
+- [3. the gap-we-fill](#3-the-gap-we-fill)
+- [4. our-solution-rag-shield](#4-our-solution-rag-shield)
+- [5. how-it-works-end-to-end](#5-how-it-works-end-to-end)
+- [6. tech-stack](#6-tech-stack)
+- [7. repository-structure](#7-repository-structure)
+- [8. setup-step-by-step](#8-setup-step-by-step)
+- [9. running-the-demo](#9-running-the-demo)
+- [10. the-gui-explained](#10-the-gui-explained)
+- [11. demo-mode-vs-live-mode](#11-demo-mode-vs-live-mode)
+- [12. results](#12-results)
+- [13. the-8-steps-the-professor-requires](#13-the-8-steps-the-professor-requires)
+- [14. team-group-6](#14-team-group-6)
+- [15. troubleshooting](#15-troubleshooting)
+- [16. links](#16-links)
 
 ---
 
-## 1. What this project is
+## 1. tldr
 
-This repository does two things:
+RAG (Retrieval-Augmented Generation) lets an LLM answer using documents fetched from an external knowledge base. The **PoisonedRAG** paper (USENIX Security 2025) shows that injecting just **5 malicious documents** into a knowledge base of **millions** makes the LLM output an attacker-chosen wrong answer **~90% of the time** — and that existing defenses don't stop it.
 
-1. **Reproduces** the attack from the USENIX Security 2025 paper *PoisonedRAG: Knowledge Corruption Attacks to Retrieval-Augmented Generation of Large Language Models* on our own knowledge base.
-2. **Proposes and implements our own defense — RAG-Shield** — a 3-ring, defense-in-depth pipeline that closes the gap the paper explicitly leaves open ("existing defenses are insufficient... highlighting the need for new defenses").
+This project (1) **reproduces** that attack and (2) builds **RAG-Shield**, a **3-ring defense-in-depth** pipeline that drops attack success from ~90% to ~13% while preserving normal-query accuracy.
 
-The result: attack success rate drops from ~90% (undefended) to ~13% (RAG-Shield), while normal-query accuracy is preserved.
+The whole thing runs **instantly in demo mode** (no API keys, no GPU) and upgrades to **live mode** (real FAISS index + Claude/LLaMA) with a single environment flag.
 
----
-
-## 2. The paper in one paragraph
-
-RAG (Retrieval-Augmented Generation) makes an LLM answer using documents pulled from an external knowledge base, fixing stale knowledge and reducing hallucination. PoisonedRAG is the **first knowledge-corruption attack** on RAG: an attacker injects just **5 malicious documents per target question** into a KB of **millions** of clean documents, and induces the LLM to output an **attacker-chosen wrong answer** — achieving a **~90% attack success rate**. Each poison document is split into two parts, `P = S + I`: `S` is a retrieval trigger (gets the doc retrieved), `I` is the injection (misleads the LLM). The attack works in both black-box (LLM-generated poison, realistic) and white-box (gradient-optimized) settings, across many LLMs, retrievers, and datasets.
-
-Full details: [`docs/paper_summary.md`](docs/paper_summary.md)
+[Back to top](#top)
 
 ---
 
-## 3. The gap we fill
+## 2. the attack-poisonedrag
 
-The authors evaluated the standard defenses (perplexity filtering, query paraphrasing, knowledge expansion) and showed **they don't work** — residual attack success stays around 30%+. They call for new defenses.
+**Paper:** PoisonedRAG: Knowledge Corruption Attacks to Retrieval-Augmented Generation of Large Language Models
+**Authors:** Wei Zou, Runpeng Geng, Binghui Wang, Jinyuan Jia
+**Venue:** 34th USENIX Security Symposium, 2025 · arXiv 2402.07867
 
-**Our gap statement:** single-layer defenses are a single point of failure. We need **defense-in-depth** that screens documents at *ingest*, at *retrieval*, and at *generation*.
+### The idea
 
-Full analysis: [`docs/gap_and_fix.md`](docs/gap_and_fix.md)
+A poison document must satisfy **two conditions at once**:
 
----
+1. **Retrieval condition** — it must be similar enough to the target question to be retrieved into the top-K.
+2. **Generation condition** — once retrieved, it must mislead the LLM into producing the attacker's answer.
 
-## 4. Our solution — RAG-Shield (3-ring defense)
+Each poison doc is built as `P = S + I`:
 
 ```
-   User Query
-       |
-       v
-  Knowledge Base  (clean docs + hidden poison)
-       |
-       v
-  +-----------------------------------------------+
-  |  RING 1 - Ingest Guard                        |
-  |  perplexity + embedding-outlier + pattern     |
-  +-----------------------------------------------+
-       |
-       v
-  +-----------------------------------------------+
-  |  RING 2 - Retrieval Scorer                    |
-  |  source-provenance + inter-doc consistency    |
-  +-----------------------------------------------+
-       |
-       v
-  +-----------------------------------------------+
-  |  RING 3 - Cross-LLM Consensus                 |
-  |  Claude + Azure OpenAI + Ollama (LLaMA)       |
-  |  disagreement => re-retrieve excluding suspect|
-  +-----------------------------------------------+
-       |
-       v
-  Trusted Answer
+   P (poison document)
+   = S  (retrieval trigger)   +   I  (injection text)
+     |                             |
+     | crafted to MATCH the        | carries the MISINFORMATION
+     | question so it gets         | that pushes the LLM toward
+     | retrieved (the disguise)    | the wrong answer (the payload)
 ```
 
-| Ring | Stage | Mechanism | Catches |
-|------|-------|-----------|---------|
-| **1 - Ingest Guard** | Document added to KB | Perplexity scoring + embedding-outlier detection + pattern match (verbatim query embedded) | Crude / templated poison at the door |
-| **2 - Retrieval Scorer** | Query time | Source-provenance weighting + inter-document consistency + trust re-ranking | Poison that contradicts the consensus of clean docs |
-| **3 - Cross-LLM Consensus** | Generation | Query 3 LLMs in parallel, flag disagreement, re-retrieve excluding suspects | Poison that slipped through rings 1-2 |
+Trojan-horse analogy: `S` is the disguise that gets the horse through the gate (retrieval); `I` is the soldier inside that does the damage (generation).
 
-**Why it works:** to succeed, poison must defeat *all three independent checkpoints at once* — far harder than beating any single filter.
-
----
-
-## 5. Tech stack
-
-| Layer | Choice |
-|-------|--------|
-| Language | Python 3.11 (venv) |
-| Vector index | FAISS |
-| Embeddings | `sentence-transformers` — `all-mpnet-base-v2` (768-dim, CPU mode on Mac) |
-| Knowledge base | 5,000 Wikipedia docs (`wikimedia/wikipedia`, `20231101.en`) |
-| LLM backends | Anthropic Claude · Azure OpenAI · Ollama (LLaMA 3.1 8B) |
-| UI | Streamlit (attack demo, defense demo, side-by-side, forensic explorer, results dashboard) |
-| Orchestration | Custom `LLMBackend` unified interface |
-
----
-
-## 6. Repository structure
+### Attack flow
 
 ```
-Major-Project-PoisonedRAG/
-├── README.md                  <- you are here
-├── docs/
-│   ├── paper_summary.md        <- the paper, explained for the team
-│   ├── gap_and_fix.md          <- what's missing + what we add
-│   └── viva_qa.md              <- 60+ Q&A to prep every member
-├── paper/                     <- the PDF + notes
-├── knowledge_base/            <- build_kb.py, build_index.py
-├── baseline/                  <- target_questions.json, generate_poison.py, inject_poison.py, measure_baseline_asr.py
-├── defense/                   <- ring1_ingest_guard.py, ring2_retrieval_scorer.py, ring3_cross_llm.py
-├── llm_backends/              <- unified_interface.py
-├── evaluation/                <- eval harness + results
-├── frontend/                  <- Streamlit app
-├── slides/                    <- PoisonedRAG_Group6_Presentation.pptx
-└── report/                    <- final written report
+  attacker picks:  target question  +  wrong answer
+          |
+          v
+  build 5 poison docs (S + I)  ---->  inject into knowledge base
+                                              |
+   user later asks the target question        |
+          |                                    v
+          v                          top-K retrieval pulls poison
+     LLM reads poisoned context  <---  (poison out-ranks clean docs)
+          |
+          v
+     LLM returns the ATTACKER'S answer   (attack success ~90%)
 ```
 
----
+Full explainer: [docs/paper_summary.md](docs/paper_summary.md)
 
-## 7. The 8 steps the professor requires
-
-| # | Step | Status | Where |
-|---|------|--------|-------|
-| 1 | Update Excel with paper details | ☐ | course sheet |
-| 2 | Read the paper | ☐ | `docs/paper_summary.md` |
-| 3 | Analyze the problem | ☐ | `docs/paper_summary.md` §Problem |
-| 4 | Understand the proposed solution | ☐ | `docs/paper_summary.md` §Attack |
-| 5 | Identify the gap | ☐ | `docs/gap_and_fix.md` |
-| 6 | Propose our own solution | ☐ | `docs/gap_and_fix.md` §RAG-Shield |
-| 7 | Implement it | ☐ | `defense/`, `frontend/` |
-| 8 | Demonstrate effectiveness | ☐ | `evaluation/`, live demo |
+[Back to top](#top)
 
 ---
 
-## 8. Team — Group 6
+## 3. the gap-we-fill
+
+The paper tested the obvious defenses and showed each fails:
+
+| Defense | Why it fails |
+|---------|--------------|
+| Perplexity filtering | Poison is LLM-generated, so it reads fluently with natural perplexity |
+| Query paraphrasing | Poison matches meaning, not exact words — rewording doesn't move embeddings enough |
+| Knowledge expansion | More retrieved docs still include the poison; the LLM keeps weighting it |
+
+Even with defenses on, attack success stays around **30%+**. The authors explicitly call for new defenses.
+
+**Our diagnosis:** every one of those is a **single checkpoint** — a single point of failure. The attacker just tunes the poison to beat that one check.
+
+**Gap statement:** *what's missing is layered, defense-in-depth protection that screens documents at ingest, at retrieval, and at generation — so defeating one layer is not enough.*
+
+Full analysis: [docs/gap_and_fix.md](docs/gap_and_fix.md)
+
+[Back to top](#top)
+
+---
+
+## 4. our-solution-rag-shield
+
+RAG-Shield places **three independent rings** at three stages of the pipeline. To succeed, poison must defeat **all three at once**.
+
+```
+  +==================================================================+
+  |                          RAG-SHIELD                              |
+  +==================================================================+
+
+   document being ADDED            query ARRIVES           answer being FORMED
+          |                             |                        |
+          v                             v                        v
+   +--------------+            +-----------------+      +-------------------+
+   |   RING 1     |            |     RING 2      |      |      RING 3       |
+   | Ingest Guard |  ------->  | Retrieval Score |  --> | Cross-LLM Vote    |
+   +--------------+            +-----------------+      +-------------------+
+   perplexity                  provenance / trust       3 LLMs answer
+   embedding-outlier           inter-doc consistency    if they DISAGREE ->
+   pattern (verbatim Q)        trust re-ranking          drop suspect + re-ask
+          |                             |                        |
+          v                             v                        v
+   block crafted poison       drop low-trust /          catch poison that
+   at the door                inconsistent docs         slipped through 1-2
+```
+
+### Ring 1 — Ingest Guard
+Screens a document as it enters the KB. Three detectors: **perplexity** (repetition / keyword-stuffing proxy), **embedding-outlier** (distance from the KB centroid), **pattern** (a target question embedded verbatim — a PoisonedRAG hallmark). A doc is blocked if the combined score exceeds the threshold.
+
+### Ring 2 — Retrieval Scorer
+At query time, re-scores the retrieved top-K. **Provenance weighting** (trusted sources rank higher), **inter-document consistency** (a doc that contradicts the clean majority is down-weighted), then **trust-weighted re-ranking**. Docs below the trust floor are dropped from the context.
+
+### Ring 3 — Cross-LLM Consensus
+Queries 3 different LLMs with the same context. If they **agree**, return with confidence. If they **disagree**, drop the lowest-trust doc(s) and **re-retrieve / re-ask once**. Different model families don't get fooled identically, so disagreement is a strong poison signal.
+
+> Airport-security analogy: one checkpoint can be fooled; three independent checkpoints (bag scan, metal detector, human officer) are much harder to beat all at once.
+
+[Back to top](#top)
+
+---
+
+## 5. how-it-works-end-to-end
+
+Full data flow with the rings engaged:
+
+```
+  USER QUERY
+     |
+     v
+  [ Retriever ]                         demo: TF-IDF (sklearn)
+   top-K docs from KB (clean + poison)  live: FAISS + sentence-transformers
+     |
+     v
+  [ RING 1  Ingest Guard ]   --> blocked docs logged, dropped
+     |
+     v
+  [ RING 2  Retrieval Scorer ] --> trust re-rank; low-trust docs dropped
+     |
+     v
+  [ RING 3  Cross-LLM Consensus ]
+     |  agree?  --yes-->  return answer
+     |  disagree --> drop suspect doc --> re-retrieve --> re-vote
+     v
+  TRUSTED ANSWER  (+ full per-ring trace for the Forensic page)
+```
+
+The orchestrator is `ragshield_core/rag_shield.py`. Two entry points:
+- `answer(question, defense=True/False, candidates=[...])` — returns the answer.
+- `trace(...)` — returns every ring's decision (used by the Forensic Explorer UI).
+
+[Back to top](#top)
+
+---
+
+## 6. tech-stack
+
+| Layer | Demo mode | Live mode |
+|-------|-----------|-----------|
+| Language | Python 3.11 | Python 3.11 |
+| Retriever | TF-IDF + cosine (scikit-learn) | FAISS + `all-mpnet-base-v2` (sentence-transformers) |
+| Knowledge base | built-in mini-KB | 5,000 Wikipedia docs (`wikimedia/wikipedia`, `20231101.en`) |
+| LLMs | 3 heuristic mock LLMs | Claude (Anthropic) + LLaMA 3.1 (Ollama) + Azure OpenAI (optional) |
+| UI | Streamlit | Streamlit |
+| Eval | live ASR harness | live ASR harness |
+
+[Back to top](#top)
+
+---
+
+## 7. repository-structure
+
+```
+poisonedrag-ragshield-group6-iitj/
+|
++-- README.md                      <- this file
++-- PROJECT_GUIDE.md               <- file map + GUI guide + all commands
++-- QUICKSTART.md                  <- 2-minute setup
++-- LICENSE                        <- MIT
++-- requirements-demo.txt          <- light deps (demo mode)
++-- requirements.txt               <- full deps (live mode)
++-- setup_project.sh               <- one-shot installer (Python 3.11 + smoke test)
++-- run_demo.sh                    <- launch the Streamlit UI
++-- demo_cli.py                    <- one-question terminal demo
++-- .gitignore                     <- blocks .env / .venv / FAISS index
++-- .env.example                   <- secrets template
++-- .streamlit/
+|   +-- config.toml                <- headless + no email prompt
+|
++-- ragshield_core/                <- THE ENGINE
+|   +-- config.py                  <- paths, env, demo/live flag
+|   +-- llm_backends.py            <- Claude / Ollama / Azure / mock + consensus panel
+|   +-- retriever.py               <- TF-IDF + FAISS retriever, KB load, poison inject
+|   +-- ring1_ingest.py            <- Ingest Guard (perplexity, pattern, outlier)
+|   +-- ring2_retrieval.py         <- Retrieval Scorer (provenance, consistency)
+|   +-- ring3_consensus.py         <- Cross-LLM consensus + re-retrieval
+|   +-- rag_shield.py              <- orchestrator (setup / answer / trace)
+|
++-- frontend/                      <- STREAMLIT DEMO
+|   +-- app.py                     <- landing + sidebar nav
+|   +-- pages/
+|   |   +-- 1_Attack_Demo.py
+|   |   +-- 2_Defense_Demo.py
+|   |   +-- 3_Side_by_Side.py
+|   |   +-- 4_Forensic_Explorer.py
+|   |   +-- 5_Results_Dashboard.py
+|   +-- components/_shared.py      <- cached shield builder + helpers
+|
++-- evaluation/                    <- EVALUATION
+|   +-- run_experiments.py         <- headless ASR harness -> results JSON
+|   +-- target_questions.json      <- 10 target questions (true + wrong answers)
+|
++-- docs/                          <- explainers
+|   +-- PAPER_SUMMARY.md
+|   +-- GAP_AND_FIX.md
+|   +-- VIVA_QA.md
+|
++-- slides/                        <- presentation deck
++-- knowledge_base/  baseline/  paper/   <- real-mode KB build + paper PDF
+```
+
+[Back to top](#top)
+
+---
+
+## 8. setup-step-by-step
+
+### Prerequisites
+- **Python 3.11** (not 3.9 — older versions break the dependency install)
+- macOS / Linux. On macOS: `brew install python@3.11`
+
+### Option A — one-shot script (recommended)
+
+```bash
+git clone https://github.com/rpaut03l/poisonedrag-ragshield-group6-iitj.git
+cd poisonedrag-ragshield-group6-iitj
+chmod +x setup_project.sh
+./setup_project.sh
+```
+
+The script finds Python 3.11, builds the venv, installs the light demo deps, and runs a smoke test.
+
+### Option B — manual
+
+```bash
+# 1. clone
+git clone https://github.com/rpaut03l/poisonedrag-ragshield-group6-iitj.git
+cd poisonedrag-ragshield-group6-iitj
+
+# 2. virtual environment (MUST be Python 3.11)
+python3.11 -m venv .venv
+source .venv/bin/activate
+python --version            # confirm 3.11.x
+
+# 3. install demo dependencies (light, no torch/faiss)
+pip install --upgrade pip
+pip install -r requirements-demo.txt
+
+# 4. verify
+DEMO_MODE=1 python demo_cli.py "Who founded Tesla Motors?"
+```
+
+Expected output:
+```
+[NO DEFENSE]  -> Nikola Jones          (attack succeeds)
+[RAG-SHIELD]  -> Martin Eberhard        (defense restores truth)
+   Ring1 blocked=3  Ring2 dropped=0  Ring3 agreement=1.0
+```
+
+[Back to top](#top)
+
+---
+
+## 9. running-the-demo
+
+```bash
+source .venv/bin/activate
+
+# launch the GUI
+DEMO_MODE=1 streamlit run frontend/app.py
+# then open http://localhost:8501
+
+# one-question terminal demo
+DEMO_MODE=1 python demo_cli.py "Who designed the Eiffel Tower?"
+
+# full evaluation (writes evaluation/results/asr_results.json)
+DEMO_MODE=1 python evaluation/run_experiments.py
+
+# if port 8501 is busy
+DEMO_MODE=1 streamlit run frontend/app.py --server.port 8502
+```
+
+[Back to top](#top)
+
+---
+
+## 10. the-gui-explained
+
+The left sidebar has the landing page plus 5 pages. The top tags show the mode (`DEMO` / `LIVE`), `top-K`, and group.
+
+| Page | Proves | What you do | What you see |
+|------|--------|-------------|--------------|
+| **Attack Demo** | the problem exists | "Run attack (no defense)" | poison docs (red) out-rank clean docs; LLM returns the wrong answer |
+| **Defense Demo** | the fix works | "Run with RAG-Shield" | ring-by-ring trace: Ring1 blocked count, Ring2 dropped + trust, Ring3 agreement %; correct answer restored |
+| **Side-by-Side** | instant contrast | "Compare" | plain RAG (wrong) next to RAG-Shield (right), together |
+| **Forensic Explorer** | how it caught it | expand any doc | the actual Ring1 scores (perplexity/pattern/outlier), Ring2 trust, Ring3 panel JSON |
+| **Results Dashboard** | the numbers | "Run evaluation" | live ASR bar chart (No Defense / Paper's Defenses / RAG-Shield) + per-question table |
+
+**Presentation order:** Attack -> Side-by-Side -> Defense -> Forensic -> Dashboard (problem, contrast, mechanism, proof, numbers).
+
+[Back to top](#top)
+
+---
+
+## 11. demo-mode-vs-live-mode
+
+Controlled by the `DEMO_MODE` environment variable.
+
+| | DEMO_MODE=1 (default) | DEMO_MODE=0 (live) |
+|---|---|---|
+| Retriever | TF-IDF (instant) | FAISS + sentence-transformers |
+| LLMs | 3 mock LLMs (different susceptibility) | Claude + Ollama LLaMA (+ Azure) |
+| Keys needed | none | `ANTHROPIC_API_KEY` (+ Ollama running) |
+| Install | `requirements-demo.txt` | `requirements.txt` |
+
+Switch to live mode:
+
+```bash
+pip install -r requirements.txt
+cp .env.example .env && nano .env          # add ANTHROPIC_API_KEY
+ollama pull llama3.1:8b && ollama serve &   # optional second vendor
+DEMO_MODE=0 streamlit run frontend/app.py
+```
+
+[Back to top](#top)
+
+---
+
+## 12. results
+
+Computed live by `evaluation/run_experiments.py` over the target questions:
+
+```
+  Attack Success Rate (%)
+
+  No Defense        |##################################  ~91
+  Paper's Defenses* |##########                          ~29
+  RAG-Shield (Ours) |####                                ~13
+
+  * illustrative placeholder until the full 30-question harness runs;
+    the No-Defense and RAG-Shield bars are computed live.
+```
+
+- Holds across multiple LLM backends.
+- Benign-query accuracy is preserved (the defense doesn't break normal questions).
+
+[Back to top](#top)
+
+---
+
+## 13. the-8-steps-the-professor-requires
+
+| # | Step | Where |
+|---|------|-------|
+| 1 | Update Excel with paper details | course sheet |
+| 2 | Read the paper | [docs/paper_summary.md](docs/paper_summary.md) |
+| 3 | Analyze the problem | [docs/paper_summary.md](docs/paper_summary.md) |
+| 4 | Understand the solution | [docs/paper_summary.md](docs/paper_summary.md) |
+| 5 | Identify the gap | [docs/gap_and_fix.md](docs/gap_and_fix.md) |
+| 6 | Propose our own solution | [docs/gap_and_fix.md](docs/gap_and_fix.md) |
+| 7 | Implement it | `ragshield_core/`, `frontend/` |
+| 8 | Demonstrate effectiveness | `evaluation/`, live demo |
+
+[Back to top](#top)
+
+---
+
+## 14. team-group-6
 
 | Member | ID | Role |
 |--------|----|----|
-| Jeenal Chaudhary | G25AIT2027 | Intro + RAG background |
-| Amit Singh | G25AIT2007 | Problem & threat model · Research |
+| Jeenal Chaudhary | G25AIT2027 | Intro +  RAG Details |
+| Amit Singh | G25AIT2007 | Problem & threat model |
 | Sharvan Vittala | G25AIT2099 | Attack mechanics · Ring 1 |
 | Sudeb Ghosh | G25AIT2113 | Attack deep-dive · Adversarial testing |
 | Kosuru Yuvaraj | G25AIT2054 | Gap analysis · Ring 2 |
@@ -165,15 +431,34 @@ Major-Project-PoisonedRAG/
 | Rohit Patel | G25AIT2089 | Architecture · Implementation · Live demo |
 | Vishnu Priya | G25AIT2128 | Frontend · Report · Demo video |
 
+[Back to top](#top)
+
 ---
 
-## 9. Links
+## 15. troubleshooting
 
-- **Paper:** https://www.usenix.org/conference/usenixsecurity25/presentation/zou-poisonedrag
+| Symptom | Fix |
+|---------|-----|
+| `networkx>=3.3` / torch install error | Your venv is Python < 3.10. Rebuild with 3.11: `rm -rf .venv && python3.11 -m venv .venv` |
+| venv `source` exit code 126 | Broken venv — same rebuild as above |
+| Streamlit stuck at `Email:` prompt | `.streamlit/config.toml` ships with `headless = true`; or run `printf '[general]\nemail = ""\n' > ~/.streamlit/credentials.toml` |
+| `localhost:8501` blank | Server didn't start — check the terminal for a traceback; `lsof -i :8501` to confirm it's listening |
+| Port busy | `streamlit run frontend/app.py --server.port 8502` |
+| Demo answers "I don't have enough information" for some Qs | Expected in demo mode — the built-in mini-KB only has clean docs for the first few topics; on the real 5,000-doc KB they resolve to true answers |
+
+[Back to top](#top)
+
+---
+
+## 16. links
+
+- **Paper (USENIX):** https://www.usenix.org/conference/usenixsecurity25/presentation/zou-poisonedrag
 - **arXiv:** https://arxiv.org/abs/2402.07867
-- **Official code:** https://github.com/sleeepeer/PoisonedRAG
+- **Official attack code:** https://github.com/sleeepeer/PoisonedRAG
 - **Our fork:** https://github.com/rpaut03l/sleeepeer_PoisonedRAG
 
 ---
 
-*Course: CSL6010 Cyber Security · Prof. Susil Kumar Mohanty · M.Tech AI · IIT Jodhpur*
+*CSL6010 Cyber Security · Prof. Susil Kumar Mohanty · M.Tech AI · IIT Jodhpur*
+
+[Back to top](#top)
