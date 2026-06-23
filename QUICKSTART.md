@@ -91,8 +91,8 @@ In live mode:
 | Command | What it does |
 |---------|--------------|
 | `./run_demo.sh` | Launch the 5-page Streamlit demo |
-| `python demo_cli.py "<question>"` | One-question terminal demo |
-| `python evaluation/run_experiments.py` | Full ASR table + writes `evaluation/results/asr_results.json` |
+| `python3.11 demo_cli.py "<question>"` | One-question terminal demo |
+| `python3.11 evaluation/run_experiments.py` | Full ASR table + writes `evaluation/results/asr_results.json` |
 
 ---
 
