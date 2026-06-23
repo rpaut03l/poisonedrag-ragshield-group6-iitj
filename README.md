@@ -87,7 +87,7 @@ Trojan-horse analogy: `S` is the disguise that gets the horse through the gate (
   build 5 poison docs (S + I)  ---->  inject into knowledge base
                                               |
    user later asks the target question        |
-          |                                    v
+          |                                   v
           v                          top-K retrieval pulls poison
      LLM reads poisoned context  <---  (poison out-ranks clean docs)
           |
@@ -403,16 +403,18 @@ Computed live by `evaluation/run_experiments.py` over the target questions:
 
 ## 13. the-8-steps-the-professor-requires
 
-| # | Step | Where |
-|---|------|-------|
-| 1 | Update Excel with paper details | course sheet |
-| 2 | Read the paper | [docs/paper_summary.md](docs/paper_summary.md) |
-| 3 | Analyze the problem | [docs/paper_summary.md](docs/paper_summary.md) |
-| 4 | Understand the solution | [docs/paper_summary.md](docs/paper_summary.md) |
-| 5 | Identify the gap | [docs/gap_and_fix.md](docs/gap_and_fix.md) |
-| 6 | Propose our own solution | [docs/gap_and_fix.md](docs/gap_and_fix.md) |
-| 7 | Implement it | `ragshield_core/`, `frontend/` |
-| 8 | Demonstrate effectiveness | `evaluation/`, live demo |
+The professor's brief requires eight steps in order. The grade lives in steps 5-8 (gap, proposal, implementation, demonstration).
+
+| # | Step | Status | Where it lives |
+|---|------|--------|----------------|
+| 1 | Update Excel with paper details | ✅ | [Google Sheet — Project Details](https://docs.google.com/spreadsheets/d/1mE86xKOTDGN1s-RmhSV2TMlsLKbWNKZbgLafJhPWi0g/edit?gid=0#gid=0) |
+| 2 | Read the paper | ✅ | [docs/paper_summary.md](docs/paper_summary.md) - full walkthrough |
+| 3 | Analyze the problem | ✅ | [docs/paper_summary.md](docs/paper_summary.md#2-the-problem-a-new-attack-surface) |
+| 4 | Understand the proposed solution | ✅ | [docs/paper_summary.md](docs/paper_summary.md#4-how-the-attack-works-the-two-conditions) |
+| 5 | Identify the gap | ✅ | [docs/gap_and_fix.md](docs/gap_and_fix.md#part-a-the-gap-step-5) |
+| 6 | Propose our own solution | ✅ | [docs/gap_and_fix.md](docs/gap_and_fix.md#part-b-our-fix-rag-shield-step-6) |
+| 7 | Implement it | ✅ | [ragshield_core/](ragshield_core/) · [frontend/](frontend/) |
+| 8 | Demonstrate effectiveness | ✅ | [evaluation/](evaluation/) · live demo ([run_demo.sh](run_demo.sh)) |
 
 [Back to top](#top)
 
@@ -422,7 +424,7 @@ Computed live by `evaluation/run_experiments.py` over the target questions:
 
 | Member | ID | Role |
 |--------|----|----|
-| Jeenal Chaudhary | G25AIT2027 | Intro +  RAG Details |
+| Jeenal Chaudhary | G25AIT2027 | Intro + RAG Details |
 | Amit Singh | G25AIT2007 | Problem & threat model |
 | Sharvan Vittala | G25AIT2099 | Attack mechanics · Ring 1 |
 | Sudeb Ghosh | G25AIT2113 | Attack deep-dive · Adversarial testing |
