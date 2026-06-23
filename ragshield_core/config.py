@@ -12,6 +12,11 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
+os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -38,6 +43,11 @@ def demo_mode() -> bool:
 
 # ---- retrieval defaults --------------------------------------------
 TOP_K = int(os.getenv("TOP_K", "5"))
+
+def retriever_backend() -> str:
+    if demo_mode():
+        return "demo"
+    return os.getenv("RETRIEVER", "tfidf")
 EMBED_MODEL = os.getenv("EMBED_MODEL", "all-mpnet-base-v2")
 
 # ---- LLM backend defaults ------------------------------------------

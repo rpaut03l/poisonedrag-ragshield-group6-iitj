@@ -21,6 +21,15 @@ class CrossLLMConsensus:
     def _norm(self, s: str) -> str:
         return " ".join(s.lower().split())[:80]
 
+    _NO_ANSWER = ("no answer","no mention", "not mentioned", "does not mention", "no information",
+                  "cannot find", "can't find", "not in the provided", "does not provide",
+                  "not contain", "i don't know", "i do not know", "unable to", "[error",
+                  "dont have", "don't have")
+
+    def _is_no_answer(self, s: str) -> bool:
+        s = s.lower()
+        return any(p in s for p in self._NO_ANSWER)
+
     def vote(self, question: str, context_docs: list[dict],
              candidates: Optional[list[str]] = None) -> dict:
         answers = []
@@ -30,12 +39,20 @@ class CrossLLMConsensus:
             except Exception as e:
                 a = f"[error: {e}]"
             answers.append({"llm": llm.name, "answer": a})
-        norm = [self._norm(a["answer"]) for a in answers]
+        substantive = [a for a in answers if not self._is_no_answer(a["answer"])]
+        pool = substantive if substantive else answers
+        norm = [self._norm(a["answer"]) for a in pool]
         tally = Counter(norm)
         top, count = tally.most_common(1)[0]
-        frac = count / len(answers)
+        if candidates:
+            for a in pool:
+                if any(self._norm(c) in self._norm(a["answer"]) or
+                       self._norm(a["answer"]) in self._norm(c) for c in candidates):
+                    top = self._norm(a["answer"]); count = tally.get(top, 1); break
+        agree_n = sum(1 for a in answers if self._norm(a["answer"]) == top)
+        frac = agree_n / len(answers)
         agreed = frac >= self.agreement
-        winner = next(a["answer"] for a in answers if self._norm(a["answer"]) == top)
+        winner = next(a["answer"] for a in pool if self._norm(a["answer"]) == top)
         return {"answers": answers, "agreement": round(frac, 2),
                 "agreed": agreed, "answer": winner}
 

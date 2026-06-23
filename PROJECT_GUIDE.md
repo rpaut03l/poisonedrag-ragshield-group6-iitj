@@ -77,7 +77,11 @@ Everything in one place: what each file does, what every GUI page shows, and eve
 | File | Purpose |
 |------|---------|
 | `demo_cli.py` | One-question terminal demo |
-| `run_demo.sh` | Launch the Streamlit UI |
+| `run_demo.sh` | Launch the demo-mode UI |
+| `run_live.sh` | Launch lite-live UI (real local LLMs, Mac-safe) |
+| `backends_status.py` | Ping each backend; show LIVE/DOWN |
+| `tail_logs.sh` | Tail `logs/ragshield.log` live |
+| `ragshield_core/raglog.py` | Real-time logger (file + in-UI panel) |
 | `setup_project.sh` | One-shot install (Python 3.11 + light deps + smoke test) |
 | `requirements-demo.txt` | Light deps for demo mode (no torch/faiss) |
 | `requirements.txt` | Full deps for live mode |
@@ -124,42 +128,61 @@ The **left sidebar** lists the landing page (`app`) plus 5 pages. Pick a target 
 
 ## 4. All run commands
 
-```bash
-# activate the env first (every new terminal)
-source .venv/bin/activate
+Use the venv python by direct path (`.venv/bin/python`) — robust even if
+`source .venv/bin/activate` fails with exit code 126 on synced Desktop paths.
 
-# launch the GUI
-DEMO_MODE=1 streamlit run frontend/app.py        # http://localhost:8501
+```bash
+# DEMO mode (mock LLMs, instant, no keys)
+DEMO_MODE=1 .venv/bin/python -m streamlit run frontend/app.py --server.port 8502
+
+# LITE-LIVE mode (real local Ollama LLMs, light retriever, Mac-safe) — recommended
+./run_live.sh                       # http://localhost:8502
+
+# live backend health check
+DEMO_MODE=0 .venv/bin/python backends_status.py
+
+# real-time log feed (second screen)
+./tail_logs.sh
 
 # one-question terminal demo
-DEMO_MODE=1 python demo_cli.py "Who founded Tesla Motors?"
+DEMO_MODE=1 .venv/bin/python demo_cli.py "Who founded Tesla Motors?"
 
 # full evaluation + write results JSON
-DEMO_MODE=1 python evaluation/run_experiments.py
-
-# different port if 8501 is busy
-DEMO_MODE=1 streamlit run frontend/app.py --server.port 8502
+DEMO_MODE=1 .venv/bin/python evaluation/run_experiments.py
 ```
 
 ---
 
-## 5. Demo / live mode
+## 5. Three run modes
 
-| | DEMO_MODE=1 (default) | DEMO_MODE=0 (live) |
-|---|---|---|
-| Retriever | TF-IDF (sklearn) | FAISS + sentence-transformers |
-| LLMs | 3 mock LLMs (different susceptibility) | Claude + Ollama LLaMA (+ Azure if set) |
-| Keys needed | none | `ANTHROPIC_API_KEY` (+ Ollama running) |
-| Install | `requirements-demo.txt` | `requirements.txt` |
-| Speed | instant | slower (model load + API) |
+| | Demo | Lite-Live (recommended) | Full-Live |
+|---|---|---|---|
+| Flags | `DEMO_MODE=1` | `DEMO_MODE=0 RETRIEVER=tfidf` | `DEMO_MODE=0 RETRIEVER=faiss` |
+| Retriever | TF-IDF | TF-IDF (light) | FAISS + sentence-transformers |
+| LLMs | 3 mock | real local Ollama panel | real local Ollama (+ Claude/Azure if set) |
+| Keys | none | none (local) | optional API keys |
+| Crash risk on Mac | none | none | high (torch/faiss segfault) |
+| Speed | instant | fast | slow |
 
-Switch to live later:
+Lite-Live setup:
 ```bash
-pip install -r requirements.txt
-cp .env.example .env && nano .env          # add ANTHROPIC_API_KEY
-ollama pull llama3.1:8b && ollama serve &  # optional 2nd vendor
-DEMO_MODE=0 streamlit run frontend/app.py
+.venv/bin/python -m pip install -r requirements.txt
+ollama pull llama3.2:3b && ollama pull phi4-mini && ollama pull gemma3:4b
+ollama serve &
+./run_live.sh
 ```
+
+`.env` for lite-live (no `#` comments after values):
+```
+OLLAMA_BASE_URL=http://localhost:11434/v1
+OLLAMA_MODEL=llama3.1:8b
+OLLAMA_PANEL=llama3.2:3b,phi4-mini:latest,gemma3:4b
+VLLM_BASE_URL=
+```
+
+Notes: vLLM needs an NVIDIA GPU (won't run on Mac). Claude API needs paid
+credits (separate from a Pro subscription). After restart, clear the Streamlit
+cache ("..." menu) so old answers don't linger.
 
 ---
 
@@ -182,7 +205,7 @@ Rohit drives this on slide 19 (5 min). Backup if the UI hiccups: `python evaluat
 | Symptom | Fix |
 |---------|-----|
 | Streamlit stuck at `Email:` prompt | `.streamlit/config.toml` ships with `headless = true` to skip it; or set `~/.streamlit/credentials.toml` with `email = ""` |
-| `localhost:8501` blank | Server didn't start — check the terminal for a traceback; confirm with `lsof -i :8501` |
+| `localhost:8502` blank | Server didn't start — check the terminal for a traceback; confirm with `lsof -i :8502` |
 | `networkx>=3.3` / torch install error | Your venv is Python < 3.10. Rebuild with 3.11: `brew install python@3.11` then `./setup_project.sh` |
 | venv `source` exit 126 | Broken venv — `rm -rf .venv && python3.11 -m venv .venv` |
 | Port busy | `--server.port 8502` |

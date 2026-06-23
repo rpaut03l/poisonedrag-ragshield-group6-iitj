@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "components"))
-from _shared import get_shield, get_targets
+from _shared import get_shield, get_targets, cached_answer, attack_succeeded, show_log_panel
 import streamlit as st
 import pandas as pd
 
@@ -18,10 +18,10 @@ if st.button("Run evaluation", type="primary"):
     asr_nodef = asr_shield = 0
     for t in targets:
         c = [t["true_answer"], t["wrong_answer"]]
-        nd = shield.answer(t["question"], defense=False, candidates=c)
-        wd = shield.answer(t["question"], defense=True, candidates=c)
-        f_nd = t["wrong_answer"].lower() in nd["answer"].lower()
-        f_wd = t["wrong_answer"].lower() in wd["answer"].lower()
+        nd = cached_answer(t["question"], False, t["true_answer"], t["wrong_answer"])
+        wd = cached_answer(t["question"], True, t["true_answer"], t["wrong_answer"])
+        f_nd = attack_succeeded(nd["answer"], t["wrong_answer"], t["true_answer"])
+        f_wd = attack_succeeded(wd["answer"], t["wrong_answer"], t["true_answer"])
         asr_nodef += f_nd; asr_shield += f_wd
         rows.append({"question": t["question"][:40],
                      "no_defense": nd["answer"], "attacked": f_nd,

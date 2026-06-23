@@ -223,7 +223,10 @@ poisonedrag-ragshield-group6-iitj/
 +-- requirements-demo.txt          <- light deps (demo mode)
 +-- requirements.txt               <- full deps (live mode)
 +-- setup_project.sh               <- one-shot installer (Python 3.11 + smoke test)
-+-- run_demo.sh                    <- launch the Streamlit UI
++-- run_demo.sh                    <- launch demo-mode UI
++-- run_live.sh                    <- launch lite-live UI (real local LLMs)
++-- backends_status.py             <- ping backends; show LIVE/DOWN
++-- tail_logs.sh                   <- live log feed
 +-- demo_cli.py                    <- one-question terminal demo
 +-- .gitignore                     <- blocks .env / .venv / FAISS index
 +-- .env.example                   <- secrets template
@@ -316,21 +319,24 @@ Expected output:
 
 ## 9. running-the-demo
 
+Call the venv python by path (`.venv/bin/python`) — robust even if
+`source .venv/bin/activate` fails (exit 126 on iCloud-synced Desktop paths).
+
 ```bash
-source .venv/bin/activate
+# DEMO mode (mock LLMs, instant, no keys)
+DEMO_MODE=1 .venv/bin/python -m streamlit run frontend/app.py --server.port 8502
+# open http://localhost:8502
 
-# launch the GUI
-DEMO_MODE=1 streamlit run frontend/app.py
-# then open http://localhost:8501
+# LITE-LIVE mode (real local Ollama LLMs, Mac-safe) — recommended for presenting
+./run_live.sh
 
-# one-question terminal demo
-DEMO_MODE=1 python demo_cli.py "Who designed the Eiffel Tower?"
+# live backend health check + real-time log feed
+DEMO_MODE=0 .venv/bin/python backends_status.py
+./tail_logs.sh
 
-# full evaluation (writes evaluation/results/asr_results.json)
-DEMO_MODE=1 python evaluation/run_experiments.py
-
-# if port 8501 is busy
-DEMO_MODE=1 streamlit run frontend/app.py --server.port 8502
+# one-question terminal demo / full evaluation
+DEMO_MODE=1 .venv/bin/python demo_cli.py "Who designed the Eiffel Tower?"
+DEMO_MODE=1 .venv/bin/python evaluation/run_experiments.py
 ```
 
 [Back to top](#top)
@@ -357,23 +363,37 @@ The left sidebar has the landing page plus 5 pages. The top tags show the mode (
 
 ## 11. demo-mode-vs-live-mode
 
-Controlled by the `DEMO_MODE` environment variable.
+Three modes via `DEMO_MODE` and `RETRIEVER`.
 
-| | DEMO_MODE=1 (default) | DEMO_MODE=0 (live) |
-|---|---|---|
-| Retriever | TF-IDF (instant) | FAISS + sentence-transformers |
-| LLMs | 3 mock LLMs (different susceptibility) | Claude + Ollama LLaMA (+ Azure) |
-| Keys needed | none | `ANTHROPIC_API_KEY` (+ Ollama running) |
-| Install | `requirements-demo.txt` | `requirements.txt` |
+| | Demo | Lite-Live (recommended) | Full-Live |
+|---|---|---|---|
+| Flags | `DEMO_MODE=1` | `DEMO_MODE=0 RETRIEVER=tfidf` | `DEMO_MODE=0 RETRIEVER=faiss` |
+| Retriever | TF-IDF | TF-IDF (light) | FAISS + sentence-transformers |
+| LLMs | 3 mock | real local Ollama panel | real local (+ Claude/Azure if set) |
+| Keys | none | none (local) | optional API keys |
+| Crash risk on Apple Silicon | none | none | high (native-lib segfault) |
+| Speed | instant | fast | slow |
 
-Switch to live mode:
+Lite-Live (real local LLMs, no cloud, no crash):
 
 ```bash
-pip install -r requirements.txt
-cp .env.example .env && nano .env          # add ANTHROPIC_API_KEY
-ollama pull llama3.1:8b && ollama serve &   # optional second vendor
-DEMO_MODE=0 streamlit run frontend/app.py
+.venv/bin/python -m pip install -r requirements.txt
+ollama pull llama3.2:3b && ollama pull phi4-mini && ollama pull gemma3:4b
+ollama serve &
+./run_live.sh
 ```
+
+`.env` for lite-live (no `#` comments after values):
+```
+OLLAMA_BASE_URL=http://localhost:11434/v1
+OLLAMA_MODEL=llama3.1:8b
+OLLAMA_PANEL=llama3.2:3b,phi4-mini:latest,gemma3:4b
+VLLM_BASE_URL=
+```
+
+Notes: vLLM needs an NVIDIA GPU (not available on Mac). Claude API needs paid
+credits (separate from a Pro subscription). After restart, clear the Streamlit
+cache ("..." menu) so cached answers refresh.
 
 [Back to top](#top)
 
@@ -414,7 +434,7 @@ The professor's brief requires eight steps in order. The grade lives in steps 5-
 | 5 | Identify the gap | ✅ | [docs/gap_and_fix.md](docs/gap_and_fix.md#part-a-the-gap-step-5) |
 | 6 | Propose our own solution | ✅ | [docs/gap_and_fix.md](docs/gap_and_fix.md#part-b-our-fix-rag-shield-step-6) |
 | 7 | Implement it | ✅ | [ragshield_core/](ragshield_core/) · [frontend/](frontend/) |
-| 8 | Demonstrate effectiveness | ✅ | [evaluation/](evaluation/) · live demo ([run_demo.sh](run_demo.sh)) |
+| 8 | Demonstrate effectiveness | ✅ | [evaluation/](evaluation/) · live demo ([run_live.sh](run_live.sh)) |
 
 [Back to top](#top)
 
@@ -444,9 +464,9 @@ The professor's brief requires eight steps in order. The grade lives in steps 5-
 | `networkx>=3.3` / torch install error | Your venv is Python < 3.10. Rebuild with 3.11: `rm -rf .venv && python3.11 -m venv .venv` |
 | venv `source` exit code 126 | Broken venv — same rebuild as above |
 | Streamlit stuck at `Email:` prompt | `.streamlit/config.toml` ships with `headless = true`; or run `printf '[general]\nemail = ""\n' > ~/.streamlit/credentials.toml` |
-| `localhost:8501` blank | Server didn't start — check the terminal for a traceback; `lsof -i :8501` to confirm it's listening |
-| Port busy | `streamlit run frontend/app.py --server.port 8502` |
-| Demo answers "I don't have enough information" for some Qs | Expected in demo mode — the built-in mini-KB only has clean docs for the first few topics; on the real 5,000-doc KB they resolve to true answers |
+| `localhost:8502` blank | Server didn't start — check the terminal for a traceback; `lsof -i :8502` to confirm it's listening |
+| Port busy | `--server.port 8503` (or `pkill -9 -f streamlit` to clear old ones) |
+| Python segfaults in live mode | Use Lite-Live (`RETRIEVER=tfidf`) via `./run_live.sh` — avoids the torch/faiss native crash on Apple Silicon |
 
 [Back to top](#top)
 

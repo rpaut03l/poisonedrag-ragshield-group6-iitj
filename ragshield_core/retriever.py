@@ -52,12 +52,29 @@ _DEMO_CLEAN = [
      "text": "Photosynthesis is the process by which green plants convert light energy "
              "into chemical energy stored in glucose.",
      "source": "clean"},
+    {"id": "c9", "title": "Mona Lisa",
+     "text": "The Mona Lisa is a portrait painting by the Italian artist Leonardo da Vinci, "
+             "painted in the early sixteenth century and held at the Louvre in Paris.",
+     "source": "clean"},
+    {"id": "c10", "title": "Canberra",
+     "text": "Canberra is the capital city of Australia. It was chosen as the capital in 1908 "
+             "as a compromise between Sydney and Melbourne.",
+     "source": "clean"},
+    {"id": "c11", "title": "Penicillin",
+     "text": "Penicillin was discovered in 1928 by the Scottish scientist Alexander Fleming, "
+             "who noticed that a mould killed surrounding bacteria.",
+     "source": "clean"},
+    {"id": "c12", "title": "World War II",
+     "text": "World War II was a global conflict that ended in 1945, with victory in Europe "
+             "in May and the surrender of Japan in September 1945.",
+     "source": "clean"},
 ]
 
 
 class Retriever:
     def __init__(self, backend: Optional[str] = None):
-        self.backend = backend or ("faiss" if not config.demo_mode() else "demo")
+        chosen = backend or config.retriever_backend()
+        self.backend = "demo" if chosen in ("demo", "tfidf") else "faiss"
         self.docs: list[dict] = []
         self._vectorizer = None
         self._matrix = None
@@ -67,11 +84,16 @@ class Retriever:
 
     # ---------- loading ----------
     def load_kb(self):
-        """Load real KB if present, else the built-in demo KB."""
+        """Load real KB if present, else the built-in demo KB.
+        ALWAYS include the curated answer-docs (_DEMO_CLEAN) so that, after the
+        shield removes poison, a correct clean source exists for each target."""
         if config.KB_DOCS.exists():
-            self.docs = [json.loads(l) for l in config.KB_DOCS.read_text().splitlines() if l.strip()]
-            for d in self.docs:
+            real = [json.loads(l) for l in config.KB_DOCS.read_text().splitlines() if l.strip()]
+            for d in real:
                 d.setdefault("source", "clean")
+            curated_ids = {d["id"] for d in _DEMO_CLEAN}
+            real = [d for d in real if d.get("id") not in curated_ids]
+            self.docs = [dict(d) for d in _DEMO_CLEAN] + real
         else:
             self.docs = [dict(d) for d in _DEMO_CLEAN]
         return self
