@@ -22,6 +22,7 @@
 ## Contents
 
 - [1. tldr](#1-tldr)
+- [see it in action](#see-it-in-action)
 - [2. the attack-poisonedrag](#2-the-attack-poisonedrag)
 - [3. the gap-we-fill](#3-the-gap-we-fill)
 - [4. our-solution-rag-shield](#4-our-solution-rag-shield)
@@ -47,6 +48,27 @@ RAG (Retrieval-Augmented Generation) lets an LLM answer using documents fetched 
 This project (1) **reproduces** that attack and (2) builds **RAG-Shield**, a **3-ring defense-in-depth** pipeline that drops attack success from ~90% to ~13% while preserving normal-query accuracy.
 
 The whole thing runs **instantly in demo mode** (no API keys, no GPU) and upgrades to **live mode** (real FAISS index + Claude/LLaMA) with a single environment flag.
+
+[Back to top](#top)
+
+---
+
+## see-it-in-action
+
+<table>
+<tr>
+<td width="50%" align="center"><b>🔴 Attack — no defense</b></td>
+<td width="50%" align="center"><b>🛡️ Defense — RAG-Shield on</b></td>
+</tr>
+<tr>
+<td><img src="assets/attack_flow.svg" alt="PoisonedRAG attack: 5 poison docs hijack the answer" width="100%"></td>
+<td><img src="assets/defense_flow.svg" alt="RAG-Shield: three rings block the attack" width="100%"></td>
+</tr>
+<tr>
+<td align="center">5 poison docs out-rank the truth → LLM answers <b>"Nikola Jones"</b> (wrong). <b>ASR ~100%</b></td>
+<td align="center">Three rings strip the poison and recover <b>"Martin Eberhard"</b> (correct). <b>ASR ~0%</b></td>
+</tr>
+</table>
 
 [Back to top](#top)
 
@@ -94,6 +116,8 @@ Trojan-horse analogy: `S` is the disguise that gets the horse through the gate (
           v
      LLM returns the ATTACKER'S answer   (attack success ~90%)
 ```
+
+<p align="center"><img src="assets/attack_flow.svg" alt="attack flow" width="780"></p>
 
 Full explainer: [docs/paper_summary.md](docs/paper_summary.md)
 
@@ -158,6 +182,8 @@ At query time, re-scores the retrieved top-K. **Provenance weighting** (trusted 
 Queries 3 different LLMs with the same context. If they **agree**, return with confidence. If they **disagree**, drop the lowest-trust doc(s) and **re-retrieve / re-ask once**. Different model families don't get fooled identically, so disagreement is a strong poison signal.
 
 > Airport-security analogy: one checkpoint can be fooled; three independent checkpoints (bag scan, metal detector, human officer) are much harder to beat all at once.
+
+<p align="center"><img src="assets/defense_flow.svg" alt="RAG-Shield defense flow" width="820"></p>
 
 [Back to top](#top)
 
