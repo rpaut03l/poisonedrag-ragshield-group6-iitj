@@ -2,18 +2,31 @@
 
 <div align="center">
 
-# PoisonedRAG + RAG-Shield
+# 🛡️ PoisonedRAG + RAG-Shield
 
-**Reproducing a state-of-the-art RAG knowledge-poisoning attack — and building the defense the authors said didn't yet exist.**
+### Break a state-of-the-art RAG poisoning attack — then build the defense its own authors said didn't exist yet.
 
-![Course](https://img.shields.io/badge/Course-CSL6010%20Cyber%20Security-7C3AED)
-![Institute](https://img.shields.io/badge/IIT%20Jodhpur-M.Tech%20AI-0EA5E9)
-![Group](https://img.shields.io/badge/Group-6-14B8A6)
+*Five malicious documents can hijack an AI's answer ~90% of the time. RAG-Shield drives that to near-zero with three independent layers of defense.*
+
+<br>
+
+![Course](https://img.shields.io/badge/Course-CSL6010%20Cyber%20Security-7C3AED?style=for-the-badge)
+![Institute](https://img.shields.io/badge/IIT%20Jodhpur-M.Tech%20AI-0EA5E9?style=for-the-badge)
+![Group](https://img.shields.io/badge/Group-6-14B8A6?style=for-the-badge)
+
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
+![Ollama](https://img.shields.io/badge/LLMs-Ollama%20local-000000?logo=ollama&logoColor=white)
 ![Status](https://img.shields.io/badge/status-active-success)
 ![License](https://img.shields.io/badge/license-MIT-yellow)
 
-[Paper Summary](docs/paper_summary.md) · [Gap &amp; Fix](docs/gap_and_fix.md) · [Viva Q&amp;A](docs/viva_qa.md) · [Project Guide](PROJECT_GUIDE.md) · [Quickstart](QUICKSTART.md) · [Slides](slides/)
+<br>
+
+**`Attack Success: ~100%`** &nbsp;➜&nbsp; **`RAG-Shield: ~0%`**
+
+<br>
+
+📄 [Paper Summary](docs/paper_summary.md) &nbsp;·&nbsp; 🔍 [Gap &amp; Fix](docs/gap_and_fix.md) &nbsp;·&nbsp; 🎓 [Viva Q&amp;A](docs/viva_qa.md) &nbsp;·&nbsp; 📘 [Project Guide](PROJECT_GUIDE.md) &nbsp;·&nbsp; ⚡ [Quickstart](QUICKSTART.md) &nbsp;·&nbsp; 🖼️ [Slides](slides/)
 
 </div>
 
@@ -21,27 +34,29 @@
 
 ## Contents
 
-- [1. tldr](#1-tldr)
-- [see it in action](#see-it-in-action)
-- [2. the attack-poisonedrag](#2-the-attack-poisonedrag)
-- [3. the gap-we-fill](#3-the-gap-we-fill)
-- [4. our-solution-rag-shield](#4-our-solution-rag-shield)
-- [5. how-it-works-end-to-end](#5-how-it-works-end-to-end)
-- [6. tech-stack](#6-tech-stack)
-- [7. repository-structure](#7-repository-structure)
-- [8. setup-step-by-step](#8-setup-step-by-step)
-- [9. running-the-demo](#9-running-the-demo)
-- [10. the-gui-explained](#10-the-gui-explained)
-- [11. demo-mode-vs-live-mode](#11-demo-mode-vs-live-mode)
-- [12. results](#12-results)
-- [13. the-8-steps-the-professor-requires](#13-the-8-steps-the-professor-requires)
-- [14. team-group-6](#14-team-group-6)
-- [15. troubleshooting](#15-troubleshooting)
-- [16. links](#16-links)
+- [1. TL;DR — What This Is](#1-tldr)
+- [See It In Action](#see-it-in-action)
+- [2. The Attack — PoisonedRAG](#2-the-attack-poisonedrag)
+- [3. The Gap We Fill](#3-the-gap-we-fill)
+- [4. Our Solution — RAG-Shield](#4-our-solution-rag-shield)
+- [5. How It Works — End to End](#5-how-it-works-end-to-end)
+- [6. Tech Stack](#6-tech-stack)
+- [7. Repository Structure](#7-repository-structure)
+- [8. Setup — Step by Step](#8-setup-step-by-step)
+- [9. Running the Demo](#9-running-the-demo)
+- [10. The GUI, Explained](#10-the-gui-explained)
+- [11. Demo Mode vs Live Mode](#11-demo-mode-vs-live-mode)
+- [12. Results](#12-results)
+- [13. The 8 Steps the Professor Requires](#13-the-8-steps-the-professor-requires)
+- [14. Team — Group 6](#14-team-group-6)
+- [15. Troubleshooting](#15-troubleshooting)
+- [16. Links](#16-links)
 
 ---
 
-## 1. tldr
+<a id="1-tldr"></a>
+
+## 1. TL;DR — What This Is
 
 RAG (Retrieval-Augmented Generation) lets an LLM answer using documents fetched from an external knowledge base. The **PoisonedRAG** paper (USENIX Security 2025) shows that injecting just **5 malicious documents** into a knowledge base of **millions** makes the LLM output an attacker-chosen wrong answer **~90% of the time** — and that existing defenses don't stop it.
 
@@ -53,7 +68,9 @@ The whole thing runs **instantly in demo mode** (no API keys, no GPU) and upgrad
 
 ---
 
-## see-it-in-action
+<a id="see-it-in-action"></a>
+
+## See It In Action
 
 <table>
 <tr>
@@ -74,7 +91,9 @@ The whole thing runs **instantly in demo mode** (no API keys, no GPU) and upgrad
 
 ---
 
-## 2. the attack-poisonedrag
+<a id="2-the-attack-poisonedrag"></a>
+
+## 2. The Attack — PoisonedRAG
 
 **Paper:** PoisonedRAG: Knowledge Corruption Attacks to Retrieval-Augmented Generation of Large Language Models
 **Authors:** Wei Zou, Runpeng Geng, Binghui Wang, Jinyuan Jia
@@ -125,7 +144,9 @@ Full explainer: [docs/paper_summary.md](docs/paper_summary.md)
 
 ---
 
-## 3. the gap-we-fill
+<a id="3-the-gap-we-fill"></a>
+
+## 3. The Gap We Fill
 
 The paper tested the obvious defenses and showed each fails:
 
@@ -147,7 +168,9 @@ Full analysis: [docs/gap_and_fix.md](docs/gap_and_fix.md)
 
 ---
 
-## 4. our-solution-rag-shield
+<a id="4-our-solution-rag-shield"></a>
+
+## 4. Our Solution — RAG-Shield
 
 RAG-Shield places **three independent rings** at three stages of the pipeline. To succeed, poison must defeat **all three at once**.
 
@@ -189,30 +212,13 @@ Queries 3 different LLMs with the same context. If they **agree**, return with c
 
 ---
 
-## 5. how-it-works-end-to-end
+<a id="5-how-it-works-end-to-end"></a>
+
+## 5. How It Works — End to End
 
 Full data flow with the rings engaged:
 
-```
-  USER QUERY
-     |
-     v
-  [ Retriever ]                         demo: TF-IDF (sklearn)
-   top-K docs from KB (clean + poison)  live: FAISS + sentence-transformers
-     |
-     v
-  [ RING 1  Ingest Guard ]   --> blocked docs logged, dropped
-     |
-     v
-  [ RING 2  Retrieval Scorer ] --> trust re-rank; low-trust docs dropped
-     |
-     v
-  [ RING 3  Cross-LLM Consensus ]
-     |  agree?  --yes-->  return answer
-     |  disagree --> drop suspect doc --> re-retrieve --> re-vote
-     v
-  TRUSTED ANSWER  (+ full per-ring trace for the Forensic page)
-```
+<p align="center"><img src="assets/pipeline_flow.svg" alt="RAG-Shield end-to-end pipeline: query -> retriever -> Ring 1 Ingest Guard -> Ring 2 Retrieval Scorer -> Ring 3 Cross-LLM Consensus -> trusted answer" width="600"></p>
 
 The orchestrator is `ragshield_core/rag_shield.py`. Two entry points:
 - `answer(question, defense=True/False, candidates=[...])` — returns the answer.
@@ -222,7 +228,9 @@ The orchestrator is `ragshield_core/rag_shield.py`. Two entry points:
 
 ---
 
-## 6. tech-stack
+<a id="6-tech-stack"></a>
+
+## 6. Tech Stack
 
 | Layer | Demo mode | Live mode |
 |-------|-----------|-----------|
@@ -237,7 +245,9 @@ The orchestrator is `ragshield_core/rag_shield.py`. Two entry points:
 
 ---
 
-## 7. repository-structure
+<a id="7-repository-structure"></a>
+
+## 7. Repository Structure
 
 ```
 poisonedrag-ragshield-group6-iitj/
@@ -295,7 +305,9 @@ poisonedrag-ragshield-group6-iitj/
 
 ---
 
-## 8. setup-step-by-step
+<a id="8-setup-step-by-step"></a>
+
+## 8. Setup — Step by Step
 
 ### Prerequisites
 - **Python 3.11** (not 3.9 — older versions break the dependency install)
@@ -343,7 +355,9 @@ Expected output:
 
 ---
 
-## 9. running-the-demo
+<a id="9-running-the-demo"></a>
+
+## 9. Running the Demo
 
 Call the venv python by path (`.venv/bin/python`) — robust even if
 `source .venv/bin/activate` fails (exit 126 on iCloud-synced Desktop paths).
@@ -369,7 +383,9 @@ DEMO_MODE=1 .venv/bin/python evaluation/run_experiments.py
 
 ---
 
-## 10. the-gui-explained
+<a id="10-the-gui-explained"></a>
+
+## 10. The GUI, Explained
 
 The left sidebar has the landing page plus 5 pages. The top tags show the mode (`DEMO` / `LIVE`), `top-K`, and group.
 
@@ -387,7 +403,9 @@ The left sidebar has the landing page plus 5 pages. The top tags show the mode (
 
 ---
 
-## 11. demo-mode-vs-live-mode
+<a id="11-demo-mode-vs-live-mode"></a>
+
+## 11. Demo Mode vs Live Mode
 
 Three modes via `DEMO_MODE` and `RETRIEVER`.
 
@@ -425,7 +443,9 @@ cache ("..." menu) so cached answers refresh.
 
 ---
 
-## 12. results
+<a id="12-results"></a>
+
+## 12. Results
 
 Computed live by `evaluation/run_experiments.py` over the target questions:
 
@@ -447,7 +467,9 @@ Computed live by `evaluation/run_experiments.py` over the target questions:
 
 ---
 
-## 13. the-8-steps-the-professor-requires
+<a id="13-the-8-steps-the-professor-requires"></a>
+
+## 13. The 8 Steps the Professor Requires
 
 The professor's brief requires eight steps in order. The grade lives in steps 5-8 (gap, proposal, implementation, demonstration).
 
@@ -466,7 +488,9 @@ The professor's brief requires eight steps in order. The grade lives in steps 5-
 
 ---
 
-## 14. team-group-6
+<a id="14-team-group-6"></a>
+
+## 14. Team — Group 6
 
 | Member | ID | Role |
 |--------|----|----|
@@ -483,7 +507,9 @@ The professor's brief requires eight steps in order. The grade lives in steps 5-
 
 ---
 
-## 15. troubleshooting
+<a id="15-troubleshooting"></a>
+
+## 15. Troubleshooting
 
 | Symptom | Fix |
 |---------|-----|
@@ -498,7 +524,9 @@ The professor's brief requires eight steps in order. The grade lives in steps 5-
 
 ---
 
-## 16. links
+<a id="16-links"></a>
+
+## 16. Links
 
 - **Paper (USENIX):** https://www.usenix.org/conference/usenixsecurity25/presentation/zou-poisonedrag
 - **arXiv:** https://arxiv.org/abs/2402.07867
