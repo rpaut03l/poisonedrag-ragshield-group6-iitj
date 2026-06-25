@@ -31,9 +31,7 @@ https://drive.google.com/drive/u/5/folders/1fy488kSICgwGo25QwLkT0c6-_jBlymn0
 | 💻 **GitHub Repository** | https://github.com/rpaut03l/poisonedrag-ragshield-group6-iitj |
 
 > ⚠️ **Access note (demo video):** Currently opens only for accounts signed in with
-> an **IIT-J (`@iitj.ac.in`) ID**. If the evaluator may use a non-IITJ account, set
-> the video sharing to **"Anyone with the link → Viewer"** so it plays without an
-> institutional login. Re-test in a fully logged-out incognito window after changing.
+> an **IIT-J (`@iitj.ac.in`) ID**.
 
 ---
 
