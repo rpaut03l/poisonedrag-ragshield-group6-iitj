@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 import streamlit as st
 from ragshield_core import config
 
-st.set_page_config(page_title="RAG-Shield", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="RAG-Shield - 3 Rings", page_icon="🛡️", layout="wide")
 
 # ---- shared styling ----
 st.markdown("""
@@ -60,12 +60,12 @@ st.divider()
 import base64
 TEAM = [
     ("Jeenal Chaudhary",  "G25AIT2027", "RAG fundamentals & pipeline · Intro"),
+    ("Rohit Patel",       "G25AIT2089", "Architecture · Implementation · Demo"),
     ("Amit Singh",        "G25AIT2007", "Threat model & problem framing"),
     ("Sharvan Vittala",   "G25AIT2099", "Attack mechanics · Ring 1 design"),
     ("Sudeb Ghosh",       "G25AIT2113", "Attack deep-dive · Adversarial tests"),
     ("Kosuru Yuvaraj",    "G25AIT2054", "Gap analysis · Ring 2 design"),
     ("Pujan Chakraborty", "G25AIT2076", "RAG-Shield design · Evaluation"),
-    ("Rohit Patel",       "G25AIT2089", "Architecture · Implementation · Demo"),
     ("Vishnu Priya",      "G25AIT2128", "Frontend/UI · Results & report"),
     ("Disha Singhania",   "G25AIT2031", "Environment setup · Testing · Docs"),
 ]
