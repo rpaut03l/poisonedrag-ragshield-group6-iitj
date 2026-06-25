@@ -26,7 +26,7 @@
 
 <br>
 
-📄 [Paper Summary](docs/paper_summary.md) &nbsp;·&nbsp; 🔍 [Gap &amp; Fix](docs/gap_and_fix.md) &nbsp;·&nbsp; 🎓 [Viva Q&amp;A](docs/viva_qa.md) &nbsp;·&nbsp; 📘 [Project Guide](PROJECT_GUIDE.md) &nbsp;·&nbsp; ⚡ [Quickstart](QUICKSTART.md) &nbsp;·&nbsp; 🖼️ [Slides (PPTX)](slides/Group6_PoisonedRAG.pptx)
+📄 [Paper Summary](docs/paper_summary.md) &nbsp;·&nbsp; 🔍 [Gap &amp; Fix](docs/gap_and_fix.md) &nbsp;·&nbsp; 🎓 [Viva Q&amp;A](docs/viva_qa.md) &nbsp;·&nbsp; 📘 [Project Guide](PROJECT_GUIDE.md) &nbsp;·&nbsp; ⚡ [Quickstart](QUICKSTART.md) &nbsp;·&nbsp; 🖼️ [Slides (PPTX)](slides/Group6-LLM_Poisoned_RAG_and_RAG_Shield.pptx)
 
 <br>
 
@@ -534,7 +534,7 @@ The professor's brief requires eight steps in order. The grade lives in steps 5-
 ## 16. Links
 
 - **Project repo (this):** https://github.com/rpaut03l/poisonedrag-ragshield-group6-iitj
-- **🖼️ Presentation slides (PPTX):** https://github.com/rpaut03l/poisonedrag-ragshield-group6-iitj/blob/main/slides/Group6_PoisonedRAG.pptx
+- **🖼️ Presentation slides (PPTX):** https://github.com/rpaut03l/poisonedrag-ragshield-group6-iitj/blob/main/slides/Group6-LLM_Poisoned_RAG_and_RAG_Shield.pptx
 - **🎥 Video demo (live code execution):** https://drive.google.com/file/d/1Wx9n1rTxnZH5auIzjSbWRFMt-wZDFwhL/view?usp=share_link
 - **Paper (USENIX):** https://www.usenix.org/conference/usenixsecurity25/presentation/zou-poisonedrag
 - **arXiv:** https://arxiv.org/abs/2402.07867
