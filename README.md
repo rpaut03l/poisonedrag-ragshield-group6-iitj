@@ -26,7 +26,7 @@
 
 <br>
 
-📄 [Paper Summary](docs/paper_summary.md) &nbsp;·&nbsp; 🔍 [Gap &amp; Fix](docs/gap_and_fix.md) &nbsp;·&nbsp; 🎓 [Viva Q&amp;A](docs/viva_qa.md) &nbsp;·&nbsp; 📘 [Project Guide](PROJECT_GUIDE.md) &nbsp;·&nbsp; ⚡ [Quickstart](QUICKSTART.md) &nbsp;·&nbsp; 🖼️ [Slides](slides/)
+📄 [Paper Summary](docs/paper_summary.md) &nbsp;·&nbsp; 🔍 [Gap &amp; Fix](docs/gap_and_fix.md) &nbsp;·&nbsp; 🎓 [Viva Q&amp;A](docs/viva_qa.md) &nbsp;·&nbsp; 📘 [Project Guide](PROJECT_GUIDE.md) &nbsp;·&nbsp; ⚡ [Quickstart](QUICKSTART.md) &nbsp;·&nbsp; 🖼️ [Slides (PPTX)](slides/Group6_PoisonedRAG.pptx)
 
 <br>
 
@@ -498,13 +498,13 @@ The professor's brief requires eight steps in order. The grade lives in steps 5-
 
 | # | Member | ID | Contribution (story act + project work) |
 |---|--------|----|------------------------------------------|
-| 1 | Jeenal Chaudhary | G25AIT2027 | RAG fundamentals & pipeline (Act 1); Intro + Background Research |
-| 2 | Amit Singh | G25AIT2007 | Threat model & problem framing (Act 2); Attacker Assumptions |
-| 3 | Sharvan Vittala | G25AIT2099 | Attack mechanics, poison crafting (Act 3); Ring 1 design |
-| 4 | Sudeb Ghosh | G25AIT2113 | Black/white-box attack deep-dive (Act 3); Adversarial Test Cases |
-| 5 | Kosuru Yuvaraj | G25AIT2054 | Damage analysis & the gap (Acts 4–5); Ring 2 design |
-| 6 | Pujan Chakraborty | G25AIT2076 | RAG-Shield 3-ring design & blueprint (Act 6); Evaluation Methodology |
-| 7 | Rohit Patel | G25AIT2089 | System Architecture & Full Implementation; Live Demo (Act 6) |
+| 1 | Jeenal Chaudhary | G25AIT2027 | RAG fundamentals & pipeline; Intro + Background Research |
+| 2 | Amit Singh | G25AIT2007 | Threat model & problem framing; Attacker Assumptions |
+| 3 | Sharvan Vittala | G25AIT2099 | Attack mechanics, poison crafting; Ring 1 design |
+| 4 | Sudeb Ghosh | G25AIT2113 | Black/white-box attack deep-dive; Adversarial Test Cases |
+| 5 | Kosuru Yuvaraj | G25AIT2054 | Damage analysis & the gap; Ring 2 design |
+| 6 | Pujan Chakraborty | G25AIT2076 | RAG-Shield 3-ring design & blueprint; Evaluation Methodology |
+| 7 | Rohit Patel | G25AIT2089 | System Architecture & Full Implementation; Live Demo |
 | 8 | Vishnu Priya | G25AIT2128 | Frontend/UI review; Results Consolidation & Report |
 | 9 | Disha Singhania | G25AIT2031 | Environment setup & testing; Demo Validation; Documentation |
 
@@ -534,6 +534,7 @@ The professor's brief requires eight steps in order. The grade lives in steps 5-
 ## 16. Links
 
 - **Project repo (this):** https://github.com/rpaut03l/poisonedrag-ragshield-group6-iitj
+- **🖼️ Presentation slides (PPTX):** https://github.com/rpaut03l/poisonedrag-ragshield-group6-iitj/blob/main/slides/Group6_PoisonedRAG.pptx
 - **🎥 Video demo (live code execution):** https://drive.google.com/file/d/1Wx9n1rTxnZH5auIzjSbWRFMt-wZDFwhL/view?usp=share_link
 - **Paper (USENIX):** https://www.usenix.org/conference/usenixsecurity25/presentation/zou-poisonedrag
 - **arXiv:** https://arxiv.org/abs/2402.07867
