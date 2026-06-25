@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 import streamlit as st
 from ragshield_core import config
 
-st.set_page_config(page_title="RAG-Shield - 3 Rings", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="RAG-Shield|3_Rings|Group_6", page_icon="🛡️", layout="wide")
 
 # ---- shared styling ----
 st.markdown("""
