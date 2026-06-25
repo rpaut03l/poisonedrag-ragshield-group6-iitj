@@ -128,9 +128,25 @@ def make_consensus_panel(mode_for_real: Optional[str] = None) -> list[LLMBackend
             LLMBackend("mock", susceptibility=0.15, name="Mock-C (robust)"),
         ]
     panel, avail = [], available_backends()
+    # Cloud vendors first (only if configured/funded)
     if "anthropic" in avail:
         panel.append(LLMBackend("anthropic", name="Claude"))
-    panel.append(LLMBackend("ollama", name="LLaMA"))
+    if "vllm" in avail:
+        panel.append(LLMBackend("vllm", name="vLLM"))
     if "azure_openai" in avail:
         panel.append(LLMBackend("azure_openai", name="Azure-GPT"))
+    if "bedrock" in avail:
+        panel.append(LLMBackend("bedrock", name="Bedrock"))
+
+    # Local Ollama models. OLLAMA_PANEL lets you run 2-3 different local models
+    # so Ring 3 has a real multi-model consensus even with no paid API.
+    ollama_models = [m.strip() for m in os.getenv(
+        "OLLAMA_PANEL", "llama3.2:3b,phi4-mini:latest,gemma3:4b").split(",") if m.strip()]
+    if panel:
+        # cloud vendor(s) present -> add ONE local model as a different-vendor voice
+        panel.append(LLMBackend("ollama", model=ollama_models[0], name=f"Ollama:{ollama_models[0]}"))
+    else:
+        # no cloud -> build the whole panel from local models
+        for m in ollama_models:
+            panel.append(LLMBackend("ollama", model=m, name=f"Ollama:{m}"))
     return panel or [LLMBackend("mock", name="Mock-fallback")]
