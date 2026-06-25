@@ -36,6 +36,8 @@
 
 ---
 
+> 📦 **Project submission?** All deliverable links (demo video, slides, ZIP, Drive folder) are in **[project_zip_file/SUBMISSION_LINKS.md](project_zip_file/SUBMISSION_LINKS.md)**.
+
 ## Contents
 
 - [1. TL;DR — What This Is](#1-tldr)
