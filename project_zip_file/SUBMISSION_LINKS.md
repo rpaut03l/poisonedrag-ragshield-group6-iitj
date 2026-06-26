@@ -45,4 +45,4 @@ https://drive.google.com/drive/u/5/folders/1fy488kSICgwGo25QwLkT0c6-_jBlymn0
 
 ---
 
-*Group6-LLM_Poisoned_RAG_and_RAG_Shield · CSL6010 Cyber Security · IIT Jodhpur. Keep this file with the codebase for quick reference to all deliverable links.*
+*Group6-LLM_Poisoned_RAG_and_RAG_Shield · CSL6010 Cyber Security · IIT Jodhpur.*
