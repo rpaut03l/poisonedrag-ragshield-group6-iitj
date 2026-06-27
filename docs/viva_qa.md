@@ -1199,7 +1199,7 @@ text = (f"{q} According to verified records, the answer is {wrong}. "
 |    diversity = |unique words| / |words|                  |
 |    rep       = 1 - diversity          # high = repetitive|
 |    top       = max_word_freq / |words|                   |
-|    p_score   = min(1, 0.6*rep + 2*max(0, top - 0.12))   |
+|    p_score   = min(1, 0.6*rep + 2*max(0, top - 0.12))    |
 |                                                          |
 |  PatternDetector:                                        |
 |    "verified records|widely accepted" found  -> +0.3     |
@@ -1209,10 +1209,10 @@ text = (f"{q} According to verified records, the answer is {wrong}. "
 |                                                          |
 |  OutlierDetector:                                        |
 |    centroid = mean(all_doc_vectors), normalised          |
-|    o_score  = min(1, max(0, 1 - dot(v_norm, centroid))) |
+|    o_score  = min(1, max(0, 1 - dot(v_norm, centroid)))  |
 |                                                          |
 |  Combine:                                                |
-|    combined = max(p, pa, 0.7*o + 0.3*max(p, pa))        |
+|    combined = max(p, pa, 0.7*o + 0.3*max(p, pa))         |
 |    BLOCKED  = combined >= 0.5                            |
 |                                                          |
 |  Fallback (all blocked):                                 |
@@ -1235,17 +1235,17 @@ Honest caveat: lexical proxy not real GPT-2. Fast, no extra model. Production: s
 |----------------------------------------------------------|
 |  ProvenanceWeight (source trust table):                  |
 |    clean / wikipedia / gov / peer-reviewed -> 0.95-1.0   |
-|    unknown / user-upload                  -> 0.4-0.5    |
+|    unknown / user-upload                  -> 0.4-0.5     |
 |    POISONED                               -> 0.1         |
 |                                                          |
 |  ConsistencyCheck (token-overlap majority vote):         |
 |    majority  = Counter(union of all doc word-bags)       |
-|    overlap_i = sum(min(b_i[t], majority[t]-b_i[t]))     |
+|    overlap_i = sum(min(b_i[t], majority[t]-b_i[t]))      |
 |             = agreement with ALL OTHER docs              |
-|    c_score_i = min(1, overlap_i / sum(b_i.values()))    |
+|    c_score_i = min(1, overlap_i / sum(b_i.values()))     |
 |                                                          |
 |  Trust score:                                            |
-|    trust = 0.45*p_w + 0.35*c_score + 0.20*ret_score     |
+|    trust = 0.45*p_w + 0.35*c_score + 0.20*ret_score      |
 |                                                          |
 |  Filter:                                                 |
 |    KEPT    = docs where trust >= 0.35                    |
@@ -1269,10 +1269,10 @@ Poison disagrees with clean majority → low overlap → low consistency → low
 
 ```
 +----------------------------------------------------------+
-|  RING 3: CROSS-LLM CONSENSUS  (ring3_consensus.py)      |
+|  RING 3: CROSS-LLM CONSENSUS  (ring3_consensus.py)       |
 |----------------------------------------------------------|
 |  Panel:                                                  |
-|    Demo: Mock-A(0.85) + Mock-B(0.45) + Mock-C(0.15)     |
+|    Demo: Mock-A(0.85) + Mock-B(0.45) + Mock-C(0.15)      |
 |    Live: Claude + llama3.2:3b + phi4-mini + gemma3:4b    |
 |                                                          |
 |  vote(question, context_docs, candidates):               |
@@ -1406,26 +1406,26 @@ Ring 1: O(K) text scans = microseconds. Ring 2: O(K²) token-overlap = milliseco
 |  TOP_K                         5                         |
 |  n_poison per question         3-5                       |
 |  Embedding dim                 768 (all-mpnet-base-v2)   |
-|  Similarity metric             cosine = inner product     |
-|  FAISS index type              IndexFlatIP (exact)        |
-|  Ring 1 block threshold        0.5                        |
-|  Ring 1 perp weight            0.6                        |
-|  Ring 1 outlier weight (combo) 0.7                        |
-|  Ring 2 provenance weight      0.45                       |
-|  Ring 2 consistency weight     0.35                       |
-|  Ring 2 ret-score weight       0.20                       |
-|  Ring 2 drop threshold         0.35                       |
-|  Ring 2 prov: clean/wiki       1.0 / 0.95                 |
-|  Ring 2 prov: POISONED         0.1                        |
-|  Ring 3 agreement threshold    0.66 (two-thirds)          |
-|  Ring 3 max re-tries           1                          |
-|  LLM temperature               0.0 (deterministic)        |
-|  Mock susceptibility           0.85 / 0.45 / 0.15         |
-|  Demo KB                       12 clean docs              |
-|  Live KB                       5,000 Wikipedia docs       |
-|  ASR undefended                ~91%  (illustrative)       |
-|  ASR paper defenses            ~29%  (illustrative)       |
-|  ASR RAG-Shield                ~13%  (illustrative)       |
+|  Similarity metric             cosine = inner product    |
+|  FAISS index type              IndexFlatIP (exact)       |
+|  Ring 1 block threshold        0.5                       |
+|  Ring 1 perp weight            0.6                       |
+|  Ring 1 outlier weight (combo) 0.7                       |
+|  Ring 2 provenance weight      0.45                      |
+|  Ring 2 consistency weight     0.35                      |
+|  Ring 2 ret-score weight       0.20                      |
+|  Ring 2 drop threshold         0.35                      |
+|  Ring 2 prov: clean/wiki       1.0 / 0.95                |
+|  Ring 2 prov: POISONED         0.1                       |
+|  Ring 3 agreement threshold    0.66 (two-thirds)         |
+|  Ring 3 max re-tries           1                         |
+|  LLM temperature               0.0 (deterministic)       |
+|  Mock susceptibility           0.85 / 0.45 / 0.15        |
+|  Demo KB                       12 clean docs             |
+|  Live KB                       5,000 Wikipedia docs      |
+|  ASR undefended                ~91%  (illustrative)      |
+|  ASR paper defenses            ~29%  (illustrative)      |
+|  ASR RAG-Shield                ~13%  (illustrative)      |
 +----------------------------------------------------------+
 ```
 
@@ -3265,8 +3265,8 @@ Why: The real LLM's training knowledge was strong enough to override the poison 
 |  Bar color             #F87171 red (all bars same)       |
 |  Delta color           green   delta_color="inverse"     |
 |  attacked checkbox ☑   if attack_succeeded=True          |
-|  attacked checkbox ☐   if False (refusal or LLM knew)   |
-|  still_fooled ☑        if attack_succeeded=True after     |
+|  attacked checkbox ☐   if False (refusal or LLM knew)    |
+|  still_fooled ☑        if attack_succeeded=True after    |
 |                                shield (0 in screenshot)  |
 |  still_fooled ☐        all 10 rows in screenshot         |
 +----------------------------------------------------------+
