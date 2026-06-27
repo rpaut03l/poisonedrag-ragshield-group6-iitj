@@ -17,6 +17,7 @@ Legend for who's most likely to field each block — but **everyone** should be 
 
 ---
 
+<a id="mnemonic-remember-everything-with-tapgris"></a>
 ## Mnemonic: Remember Everything With "TAPGRIS"
 
 ```
@@ -31,6 +32,7 @@ S - Stack (Python, Ollama, Claude, TF-IDF vs FAISS, demo vs live)
 
 ---
 
+<a id="quick-cheatsheet-exam-day-pocket-card"></a>
 ## Quick Cheatsheet (exam day pocket card)
 
 ```
@@ -73,6 +75,7 @@ KEY NUMBERS:
 
 ---
 
+<a id="a-rag-fundamentals-jeenal"></a>
 ## A. RAG fundamentals  *(Jeenal)*
 
 [↑ top](#top) | [B→](#b-the-problem-threat-model-amit)
@@ -116,6 +119,7 @@ ChatGPT browsing, Bing Chat, enterprise document search, customer-support bots, 
 
 ---
 
+<a id="b-the-problem-threat-model-amit"></a>
 ## B. The problem & threat model  *(Amit)*
 
 [←A](#a-rag-fundamentals-jeenal) | [↑ top](#top) | [C→](#c-how-the-attack-works-sharvan)
@@ -142,6 +146,7 @@ No. That's what makes it dangerous — they never touch the model, its weights, 
 
 ---
 
+<a id="c-how-the-attack-works-sharvan"></a>
 ## C. How the attack works  *(Sharvan)*
 
 [←B](#b-the-problem-threat-model-amit) | [↑ top](#top) | [D→](#d-attack-variants-results-sudeb)
@@ -184,6 +189,7 @@ The question `q` is embedded verbatim = S (retrieval trigger). "According to ver
 
 ---
 
+<a id="d-attack-variants-results-sudeb"></a>
 ## D. Attack variants & results  *(Sudeb)*
 
 [←C](#c-how-the-attack-works-sharvan) | [↑ top](#top) | [E→](#e-the-gap-kosuru)
@@ -210,6 +216,7 @@ Because 5 is enough to dominate the top-K for the target question. The point is 
 
 ---
 
+<a id="e-the-gap-kosuru"></a>
 ## E. The gap  *(Kosuru)*
 
 [←D](#d-attack-variants-results-sudeb) | [↑ top](#top) | [F→](#f-our-solution-rag-shield-pujan-rohit)
@@ -233,6 +240,7 @@ Existing single-layer defenses are each a single point of failure, leaving 30%+ 
 
 ---
 
+<a id="f-our-solution-rag-shield-pujan-rohit"></a>
 ## F. Our solution: RAG-Shield  *(Pujan + Rohit)*
 
 [←E](#e-the-gap-kosuru) | [↑ top](#top) | [G→](#g-implementation-rohit)
@@ -291,6 +299,7 @@ Models from different families (e.g., Anthropic vs Meta) have different training
 
 ---
 
+<a id="g-implementation-rohit"></a>
 ## G. Implementation  *(Rohit)*
 
 [←F](#f-our-solution-rag-shield-pujan-rohit) | [↑ top](#top) | [H→](#h-results-evaluation-vishnu)
@@ -320,6 +329,7 @@ We track benign-query accuracy alongside ASR. The rings are tuned so legitimate 
 
 ---
 
+<a id="h-results-evaluation-vishnu"></a>
 ## H. Results & evaluation  *(Vishnu)*
 
 [←G](#g-implementation-rohit) | [↑ top](#top) | [I→](#i-curveballs-big-picture-everyone)
@@ -337,6 +347,7 @@ Target questions with known true/wrong answers, run through each configuration (
 
 ---
 
+<a id="i-curveballs-big-picture-everyone"></a>
 ## I. Curveballs & big-picture  *(everyone — ★)*
 
 [←H](#h-results-evaluation-vishnu) | [↑ top](#top) | [J→](#j-tech-stack-deep-dive-rohit-new-section)
@@ -375,6 +386,7 @@ Adaptive-attacker evaluation, scale to a million-doc KB, latency/cost optimizati
 
 ---
 
+<a id="j-tech-stack-deep-dive-rohit-new-section"></a>
 ## J. Tech Stack Deep-Dive  *(Rohit — new section)*
 
 [←I](#i-curveballs-big-picture-everyone) | [↑ top](#top) | [K→](#k-code-deep-dive-rag-internals-embeddings-vector-db-rohit-everyone-for-their-ring)
@@ -811,6 +823,7 @@ log(f"RING 3 -> agreement {int(verdict['agreement']*100)}%")
 
 ---
 
+<a id="k-code-deep-dive-rag-internals-embeddings-vector-db-rohit-everyone-for-their-ring"></a>
 ## K. Code deep-dive — RAG internals, embeddings & vector DB  *(Rohit + everyone for their ring)*
 
 [←J](#j-tech-stack-deep-dive-rohit-new-section) | [↑ top](#top) | [Final→](#final-60-second-elevator-pitch-memorize)
@@ -1106,6 +1119,7 @@ Defense OFF → the first LLM answers on raw poisoned retrieval (attack wins). D
 
 ---
 
+<a id="l-rag-pipeline-3-ring-system-full-reference"></a>
 ## L. RAG Pipeline & 3-Ring System — Full Reference
 
 > Kid story first, then formal. Everything an examiner can ask about the pipeline and rings — one place.
@@ -1432,6 +1446,7 @@ Ring 1: O(K) text scans = microseconds. Ring 2: O(K²) token-overlap = milliseco
 
 ---
 
+<a id="m-kb-lifecycle-attack-flow-and-prevention-code-first-walkthrough"></a>
 ## M. KB Lifecycle, Attack Flow and Prevention — Code-First Walkthrough
 
 > How the KB is built, how poison gets injected, what the demo pages actually run, and exactly where each line of defense fires. Read this if an examiner says "show me the code" or "walk me through the demo."
@@ -1989,6 +2004,7 @@ If an examiner asks you to walk through the demo live, this is the sequence:
 
 ---
 
+<a id="n-how-we-prove-the-100-0-reduction-live-numbers-explained"></a>
 ## N. How We Prove the 100% → 0% Reduction — Live Numbers Explained
 
 > This section answers: "Where do your ASR numbers come from? How do you know the defense works? Show me the math." Every number here is from a live evaluation run on the actual codebase, not illustrative.
@@ -2328,6 +2344,7 @@ RING CREDIT (real-world estimate):
 
 ---
 
+<a id="o-complete-step-by-step-breakdown-from-80-attack-to-0-with-3-rings"></a>
 ## O. Complete Step-by-Step Breakdown — From 80% Attack to 0% With 3 Rings
 
 > Every number here is from a live code run. No estimates. Kid story first, then exact math, then the screenshot explained.
@@ -2904,6 +2921,7 @@ c2.metric("ASR — RAG-Shield",
 
 ---
 
+<a id="p-screenshot-dashboard-every-number-explained-cell-by-cell"></a>
 ## P. Screenshot Dashboard — Every Number Explained Cell by Cell
 
 > The attached screenshot shows `localhost:8502/Results_Dashboard`. This section decodes every number, every checkbox, every bar, and every cell — traced back to the exact line of code that produced it.
@@ -3275,6 +3293,7 @@ Why: The real LLM's training knowledge was strong enough to override the poison 
 
 ---
 
+<a id="q-real-world-rag-poisoning-attacks-what-would-have-happened"></a>
 ## Q. Real-World RAG Poisoning Attacks — What Would Have Happened
 
 > If RAG-Shield hadn't existed, here are real-world attack scenarios that match the PoisonedRAG pattern — and how each would play out.
@@ -3542,6 +3561,7 @@ Access control             source trust table        Ring 2
 RAG-Shield is a research proof-of-concept, but each ring maps to a production-ready defense mechanism used in enterprise AI systems today.
 
 
+<a id="final-60-second-elevator-pitch-memorize"></a>
 ## Final — 60-second elevator pitch (memorize)
 
 [←K](#k-code-deep-dive-rag-internals-embeddings-vector-db-rohit-everyone-for-their-ring) | [↑ top](#top)
@@ -3550,6 +3570,7 @@ RAG-Shield is a research proof-of-concept, but each ring maps to a production-re
 
 ---
 
+<a id="exam-hacks-last-minute-survival"></a>
 ## Exam Hacks — Last-Minute Survival
 
 ```
