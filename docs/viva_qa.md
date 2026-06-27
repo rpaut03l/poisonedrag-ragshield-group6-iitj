@@ -11,7 +11,7 @@
 
 # Viva Q&A — PoisonedRAG + RAG-Shield
 
-> **Prep for every Group 6 member.** The professor or examiner can ask *anyone* about *any* part. These cover the paper, the attack, the gap, our defense, the implementation, the tech stack, and likely curveballs. Read all of them; know your own section cold.
+> **Prep for every Group #6 members.** The professor or examiner can ask *anyone* about *any* part. These cover the paper, the attack, the gap, our defense, the implementation, the tech stack, and likely curveballs. Read all of them; know your own section cold.
 
 Legend for who's most likely to field each block — but **everyone** should be able to answer the core ones (marked ★).
 
