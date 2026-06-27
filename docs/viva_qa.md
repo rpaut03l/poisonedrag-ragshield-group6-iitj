@@ -5,7 +5,7 @@
 ---
 
 > **NAVIGATION — jump to any section:**
-> [A. RAG Fundamentals](#a-rag-fundamentals) · [B. Threat Model](#b-the-problem--threat-model) · [C. Attack Mechanics](#c-how-the-attack-works) · [D. Attack Variants](#d-attack-variants--results) · [E. Gap](#e-the-gap) · [F. RAG-Shield](#f-our-solution-rag-shield) · [G. Implementation](#g-implementation) · [H. Results](#h-results--evaluation) · [I. Curveballs](#i-curveballs--big-picture) · [J. Tech Stack Deep-Dive](#j-tech-stack-deep-dive) · [K. Code Deep-Dive](#k-code-deep-dive--rag-internals-embeddings--vector-db) · [Final Pitch](#final--60-second-elevator-pitch-memorize)
+> [A. RAG Fundamentals](#a-rag-fundamentals-jeenal) · [B. Threat Model](#b-the-problem-threat-model-amit) · [C. Attack Mechanics](#c-how-the-attack-works-sharvan) · [D. Attack Variants](#d-attack-variants-results-sudeb) · [E. Gap](#e-the-gap-kosuru) · [F. RAG-Shield](#f-our-solution-rag-shield-pujan-rohit) · [G. Implementation](#g-implementation-rohit) · [H. Results](#h-results-evaluation-vishnu) · [I. Curveballs](#i-curveballs-big-picture-everyone) · [J. Tech Stack Deep-Dive](#j-tech-stack-deep-dive-rohit-new-section) · [K. Code Deep-Dive](#k-code-deep-dive-rag-internals-embeddings-vector-db-rohit-everyone-for-their-ring) · [Final Pitch](#final-60-second-elevator-pitch-memorize)
 
 ---
 
@@ -75,7 +75,7 @@ KEY NUMBERS:
 
 ## A. RAG fundamentals  *(Jeenal)*
 
-[↑ top](#top) | [B→](#b-the-problem--threat-model)
+[↑ top](#top) | [B→](#b-the-problem-threat-model-amit)
 
 **★ Q1. What is RAG and why is it used?**
 Retrieval-Augmented Generation grounds an LLM's answer in documents retrieved from an external knowledge base. It addresses two LLM weaknesses: outdated knowledge (training is frozen in time) and hallucination (making things up). The LLM answers using fetched, relevant text instead of memory alone.
@@ -118,7 +118,7 @@ ChatGPT browsing, Bing Chat, enterprise document search, customer-support bots, 
 
 ## B. The problem & threat model  *(Amit)*
 
-[←A](#a-rag-fundamentals) | [↑ top](#top) | [C→](#c-how-the-attack-works)
+[←A](#a-rag-fundamentals-jeenal) | [↑ top](#top) | [C→](#c-how-the-attack-works-sharvan)
 
 **★ Q6. What's the core contribution of the paper?**
 It's the first knowledge-corruption attack on RAG. It shows the knowledge base is a new, practical attack surface: injecting a few malicious docs makes the LLM produce an attacker-chosen answer.
@@ -144,7 +144,7 @@ No. That's what makes it dangerous — they never touch the model, its weights, 
 
 ## C. How the attack works  *(Sharvan)*
 
-[←B](#b-the-problem--threat-model) | [↑ top](#top) | [D→](#d-attack-variants--results)
+[←B](#b-the-problem-threat-model-amit) | [↑ top](#top) | [D→](#d-attack-variants-results-sudeb)
 
 **★ Q12. What two conditions must a poison document satisfy?**
 (1) Retrieval condition — it must be similar enough to the question to be retrieved into the top-K. (2) Generation condition — once retrieved, it must mislead the LLM into outputting the target answer. Both must hold simultaneously.
@@ -186,7 +186,7 @@ The question `q` is embedded verbatim = S (retrieval trigger). "According to ver
 
 ## D. Attack variants & results  *(Sudeb)*
 
-[←C](#c-how-the-attack-works) | [↑ top](#top) | [E→](#e-the-gap)
+[←C](#c-how-the-attack-works-sharvan) | [↑ top](#top) | [E→](#e-the-gap-kosuru)
 
 **Q17. How does the black-box attack craft poison?**
 It prompts an LLM to write a passage supporting the chosen wrong answer for the target question, and embeds the question's keywords verbatim so the passage gets retrieved. Then injects ~5 such passages.
@@ -212,7 +212,7 @@ Because 5 is enough to dominate the top-K for the target question. The point is 
 
 ## E. The gap  *(Kosuru)*
 
-[←D](#d-attack-variants--results) | [↑ top](#top) | [F→](#f-our-solution-rag-shield)
+[←D](#d-attack-variants-results-sudeb) | [↑ top](#top) | [F→](#f-our-solution-rag-shield-pujan-rohit)
 
 **★ Q23. What defenses did the paper test, and did they work?**
 Perplexity filtering, query paraphrasing, and knowledge expansion. None worked sufficiently — residual attack success stayed around 30%+. The authors conclude existing defenses are insufficient and call for new ones.
@@ -235,7 +235,7 @@ Existing single-layer defenses are each a single point of failure, leaving 30%+ 
 
 ## F. Our solution: RAG-Shield  *(Pujan + Rohit)*
 
-[←E](#e-the-gap) | [↑ top](#top) | [G→](#g-implementation)
+[←E](#e-the-gap-kosuru) | [↑ top](#top) | [G→](#g-implementation-rohit)
 
 **★ Q28. What is RAG-Shield?**
 
@@ -293,7 +293,7 @@ Models from different families (e.g., Anthropic vs Meta) have different training
 
 ## G. Implementation  *(Rohit)*
 
-[←F](#f-our-solution-rag-shield) | [↑ top](#top) | [H→](#h-results--evaluation)
+[←F](#f-our-solution-rag-shield-pujan-rohit) | [↑ top](#top) | [H→](#h-results-evaluation-vishnu)
 
 **Q36. What's the tech stack?**
 Python 3.11, FAISS for the vector index, sentence-transformers (`all-mpnet-base-v2`) for embeddings, a 5,000-doc Wikipedia KB, Streamlit UI, and three LLM backends (Claude, Azure OpenAI, Ollama/LLaMA) behind a unified interface.
@@ -322,7 +322,7 @@ We track benign-query accuracy alongside ASR. The rings are tuned so legitimate 
 
 ## H. Results & evaluation  *(Vishnu)*
 
-[←G](#g-implementation) | [↑ top](#top) | [I→](#i-curveballs--big-picture)
+[←G](#g-implementation-rohit) | [↑ top](#top) | [I→](#i-curveballs-big-picture-everyone)
 
 **Q43. What are your results?**
 Illustrative: undefended ~91% ASR, paper's defenses ~29%, RAG-Shield ~13% — a large reduction while preserving benign accuracy. (Final numbers pending the full eval run.)
@@ -339,7 +339,7 @@ Target questions with known true/wrong answers, run through each configuration (
 
 ## I. Curveballs & big-picture  *(everyone — ★)*
 
-[←H](#h-results--evaluation) | [↑ top](#top) | [J→](#j-tech-stack-deep-dive)
+[←H](#h-results-evaluation-vishnu) | [↑ top](#top) | [J→](#j-tech-stack-deep-dive-rohit-new-section)
 
 **★ Q46. If you had to defend the project in one sentence, what would you say?**
 "The paper proved RAG knowledge bases can be poisoned at 90% success and that existing defenses fail; we built RAG-Shield, a 3-ring defense-in-depth that cuts that to ~13%."
@@ -377,7 +377,7 @@ Adaptive-attacker evaluation, scale to a million-doc KB, latency/cost optimizati
 
 ## J. Tech Stack Deep-Dive  *(Rohit — new section)*
 
-[←I](#i-curveballs--big-picture) | [↑ top](#top) | [K→](#k-code-deep-dive--rag-internals-embeddings--vector-db)
+[←I](#i-curveballs-big-picture-everyone) | [↑ top](#top) | [K→](#k-code-deep-dive-rag-internals-embeddings-vector-db-rohit-everyone-for-their-ring)
 
 > This section covers *every component* in the stack — what it is, why we chose it, how it appears in the code, and what the alternative was when one component was blocked/unavailable.
 
@@ -813,7 +813,7 @@ log(f"RING 3 -> agreement {int(verdict['agreement']*100)}%")
 
 ## K. Code deep-dive — RAG internals, embeddings & vector DB  *(Rohit + everyone for their ring)*
 
-[←J](#j-tech-stack-deep-dive) | [↑ top](#top) | [Final→](#final--60-second-elevator-pitch-memorize)
+[←J](#j-tech-stack-deep-dive-rohit-new-section) | [↑ top](#top) | [Final→](#final-60-second-elevator-pitch-memorize)
 
 > These answer the "show me how it actually works in the code" follow-ups. Each block names the file so you can open it live if the examiner asks.
 
@@ -1106,7 +1106,7 @@ Defense OFF → the first LLM answers on raw poisoned retrieval (attack wins). D
 
 ## Final — 60-second elevator pitch (memorize)
 
-[←K](#k-code-deep-dive--rag-internals-embeddings--vector-db) | [↑ top](#top)
+[←K](#k-code-deep-dive-rag-internals-embeddings-vector-db-rohit-everyone-for-their-ring) | [↑ top](#top)
 
 > *"RAG lets LLMs answer from an external knowledge base — like an open-book exam. PoisonedRAG, from USENIX Security 2025, shows that slipping just 5 fake documents into a base of millions makes the model give an attacker's chosen wrong answer 90% of the time, and the paper proves existing defenses can't stop it. Our project, RAG-Shield, fills that gap with defense-in-depth: Ring 1 screens documents at ingest using perplexity proxies, pattern matching, and embedding outlier detection. Ring 2 scores and re-ranks them at retrieval time using source provenance and inter-document consistency. Ring 3 checks the answer across three different LLMs — Claude, LLaMA, and Phi from different families — so poison that fools one doesn't fool all. To win, poison has to beat all three at once — and in our tests, attack success drops from about 90% to about 13%."*
 
