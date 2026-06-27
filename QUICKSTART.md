@@ -10,34 +10,63 @@ Three ways to run it. **Demo** needs nothing. **Lite-Live** runs real local LLMs
 
 ## 0. One-time setup
 
-Use **Python 3.11** (3.9 breaks the install). On macOS: `brew install python@3.11`.
+Use **Python 3.11 or later** (3.9 breaks the install). On macOS: `brew install python@3.11`.
 
+### macOS / Linux
 ```bash
 cd <project-folder>
-
-# build the venv
 python3.11 -m venv .venv
-
-# If `source .venv/bin/activate` returns exit code 126 (a known issue on
-# iCloud-synced Desktop paths), DON'T fight it — just call the venv python
-# directly by path for every command, e.g. `.venv/bin/python ...`
-
 .venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -r requirements-demo.txt   # demo deps (light)
 ```
 
+### Windows (PowerShell)
+You can run the automated script or run manual commands:
+* **Automated Script:**
+  ```powershell
+  .\setup_project.ps1
+  ```
+* **Manual Commands:**
+  ```powershell
+  cd <project-folder>
+  python -m venv .venv
+  .\.venv\Scripts\python.exe -m pip install --upgrade pip
+  .\.venv\Scripts\python.exe -m pip install -r requirements-demo.txt
+  ```
+
 ## 1. Demo mode (instant, no keys, never crashes)
 
+### macOS / Linux
 ```bash
 DEMO_MODE=1 .venv/bin/python -m streamlit run frontend/app.py --server.port 8502
 ```
+
+### Windows (PowerShell)
+You can run the automated script or run manual commands:
+* **Automated Script:**
+  ```powershell
+  .\run_demo.ps1
+  ```
+* **Manual Commands:**
+  ```powershell
+  $env:DEMO_MODE="1"
+  .\.venv\Scripts\python.exe -m streamlit run .\frontend\app.py --server.port 8502
+  ```
+
 Open **http://localhost:8502**. Sidebar pages:
 Attack Demo → Side-by-Side → Defense Demo → Forensic Explorer → Results Dashboard.
 
-Terminal check:
-```bash
-DEMO_MODE=1 .venv/bin/python demo_cli.py "Who founded Tesla Motors?"
-```
+### Terminal check (CLI)
+* **macOS / Linux:**
+  ```bash
+  DEMO_MODE=1 .venv/bin/python demo_cli.py "Who founded Tesla Motors?"
+  ```
+* **Windows (PowerShell):**
+  ```powershell
+  $env:DEMO_MODE="1"
+  .\.venv\Scripts\python.exe .\demo_cli.py "Who founded Tesla Motors?"
+  ```
+
 Expected: ASR **~100% no-defense → ~0% with RAG-Shield**.
 
 ---
