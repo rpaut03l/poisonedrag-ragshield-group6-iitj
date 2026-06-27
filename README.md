@@ -26,7 +26,7 @@
 
 <br>
 
-📄 [Paper Summary](docs/paper_summary.md) &nbsp;·&nbsp; 🔍 [Gap &amp; Fix](docs/gap_and_fix.md) &nbsp;·&nbsp; 🎓 [Viva Q&amp;A](docs/viva_qa.md) &nbsp;·&nbsp; 📘 [Project Guide](PROJECT_GUIDE.md) &nbsp;·&nbsp; ⚡ [Quickstart](QUICKSTART.md) &nbsp;·&nbsp; 🖼️ [Slides (PPTX)](slides/Group6-LLM_Poisoned_RAG_and_RAG_Shield.pptx)
+📄 [Paper Summary](docs/paper_summary.md) &nbsp;·&nbsp; 🔍 [Gap &amp; Fix](docs/gap_and_fix.md) &nbsp;·&nbsp; 🎓 [Viva Q&amp;A](docs/viva_qa.md) &nbsp;·&nbsp; 📘 [Project Guide](PROJECT_GUIDE.md) &nbsp;·&nbsp; ⚡ [Quickstart](QUICKSTART.md) &nbsp;·&nbsp; 🖼️ [Slides (PPTX)](slides/CSL6010_Group6_PoisonedRAG_&_RAGShield.pptx)
 
 <br>
 
