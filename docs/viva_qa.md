@@ -61,7 +61,7 @@ TECH STACK:
   Demo mode: TF-IDF (sklearn) + mock LLMs (no API keys, no torch)
   Live mode: FAISS IndexFlatIP + sentence-transformers all-mpnet-base-v2 (768-dim, CPU)
   UI: Streamlit (5 pages)
-  LLMs: Claude (Anthropic SDK) + Ollama (OpenAI-compat) + Azure (optional/blocked)
+  LLMs: Claude (Anthropic) + Mistral Small (Mistral AI) + LLaMA 3.2 (Ollama local)
 
 KEY NUMBERS:
   TOP_K = 5
@@ -305,7 +305,7 @@ Models from different families (e.g., Anthropic vs Meta) have different training
 [←F](#f-our-solution-rag-shield-pujan-rohit) | [↑ top](#top) | [H→](#h-results-evaluation-vishnu)
 
 **Q36. What's the tech stack?**
-Python 3.11, FAISS for the vector index, sentence-transformers (`all-mpnet-base-v2`) for embeddings, a 5,000-doc Wikipedia KB, Streamlit UI, and three LLM backends (Claude, Azure OpenAI, Ollama/LLaMA) behind a unified interface.
+Python 3.11, FAISS for the vector index, sentence-transformers (`all-mpnet-base-v2`) for embeddings, a 5,000-doc Wikipedia KB, Streamlit UI, and three LLM backends (Claude via Anthropic, Mistral Small via Mistral AI, LLaMA 3.2 via Ollama) behind a unified interface.
 
 **Q37. Why `all-mpnet-base-v2`?**
 It's a strong, widely-used general-purpose sentence embedding model (768-dim) with a good quality/speed balance, suitable for semantic retrieval.
@@ -317,7 +317,7 @@ It's a fast, production-grade library for similarity search over dense vectors �
 For a demonstrable, reproducible project on local hardware. The mechanism is identical; scale is a future-work item. The attack still works because the KB has natural gaps the poison fills.
 
 **Q40. Why Claude + Ollama instead of OpenAI?**
-Azure OpenAI quota was unavailable across all regions during the build, and direct OpenAI hit a billing limit. We used Claude (Anthropic) + local LLaMA via Ollama — a genuine multi-vendor consensus, which is actually a stronger Ring 3 story. Azure slots in as a third LLM when quota is approved.
+Azure OpenAI quota was unavailable and direct OpenAI hit a billing limit. We use Claude (Anthropic) + Mistral Small (Mistral AI, France) + LLaMA 3.2 (Meta via Ollama locally). Three completely different vendor families — stronger Ring 3 story than any single-vendor approach. Mistral's free tier at console.mistral.ai takes 5 minutes to set up.
 
 **Q41. How do you measure attack success rate (ASR)?**
 For each target question, check whether the LLM's answer contains the attacker's target (wrong) answer. ASR = fraction of target questions where the attack succeeds. Measured undefended, with the paper's defenses, and with RAG-Shield.
@@ -406,7 +406,7 @@ DEMO_MODE=1 (default)               LIVE_MODE=0 (DEMO_MODE=0)
 -----------------------------       -----------------------------------
 TF-IDF retriever (sklearn)          FAISS + sentence-transformers
 Built-in 12-doc mini KB             5,000 Wikipedia docs (JSONL)
-Mock LLMs (Python heuristic)        Claude + Ollama + Azure (optional)
+Mock LLMs (Python heuristic)        Claude + Mistral Small + LLaMA (Ollama local)
 No API keys needed                  ANTHROPIC_API_KEY + Ollama running
 No torch / no faiss                 torch (CPU mode M1) + faiss-cpu
 Instant startup                     ~30-60s index build
@@ -591,7 +591,7 @@ text-embedding-3-small : OpenAI API — paid, internet required, not local
 
 ---
 
-### J9. Anthropic Claude — Ring 3 Primary LLM
+### J9. Anthropic Claude — Ring 3 First Voice
 
 **What:** Claude via Anthropic's Python SDK (`anthropic>=0.34`).
 
@@ -653,7 +653,7 @@ llama3.2:3b     -- Meta LLaMA, 3B params, fast, general
 phi4-mini       -- Microsoft Phi-4 Mini, small but strong reasoning
 gemma3:4b       -- Google Gemma 3, 4B params
 ```
-All three run on a MacBook M1 Max. When no cloud LLM is available, these three form the entire Ring 3 panel.
+In current setup, Ollama provides `llama3.2:3b` as the local open-weight voice alongside Claude (Anthropic) and Mistral Small (Mistral AI). When no cloud LLMs are available, the full Ollama panel from `OLLAMA_PANEL` env var forms Ring 3.
 
 **Code (`llm_backends.py`):**
 ```python
@@ -681,32 +681,36 @@ ollama_models = os.getenv("OLLAMA_PANEL", "llama3.2:3b,phi4-mini:latest,gemma3:4
 
 ---
 
-### J11. Azure OpenAI — Optional Third Cloud LLM (Blocked During Build)
+### J11. Mistral AI — Ring 3 Second Cloud Voice
 
-**What:** Microsoft's hosted version of OpenAI GPT models (gpt-4o-mini default).
+**What:** Mistral Small (mistral-small-latest) via the Mistral AI API. French company, EU-trained model, completely different training lineage from Anthropic.
 
-**Status:** Configured and coded, but quota was blocked during project build. Not used for the final demo.
+**Why Mistral not Azure:** Azure quota was blocked during the build. Mistral's free tier (console.mistral.ai) took 5 minutes to set up — no credit card, 500+ requests/day free. The result is actually a stronger Ring 3 story:
+
+```
+Anthropic  → US, Constitutional AI training
+Mistral AI → France, EU-trained, different alignment approach
+Meta       → Open-weight LLaMA, runs locally on Mac via Ollama
+```
+
+Three different geographies, three different training philosophies, one consensus vote. The attacker must fool all three simultaneously.
+
+**SDK note:** Use `mistralai==1.3.1` (pinned in requirements.txt). v2.x has breaking changes. Call `client.chat.complete()` not `client.chat.completions.create()`.
 
 **Code (`llm_backends.py`):**
 ```python
-elif mode == "azure_openai":
-    from openai import AzureOpenAI
-    self._client = AzureOpenAI(
-        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-10-21"))
-    self.model = model or os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini")
+elif mode == "mistral":
+    from mistralai import Mistral
+    self._client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
+    self.model = model or os.getenv("MISTRAL_MODEL", "mistral-small-latest")
+    self.name = name or f"Mistral ({self.model})"
 ```
 
-**Why still in code:** When quota is approved, it slots in as a third LLM with zero code changes. It's the `available_backends()` list that dynamically decides what's live:
-```python
-if os.getenv("AZURE_OPENAI_API_KEY") and os.getenv("AZURE_OPENAI_ENDPOINT"):
-    out.append("azure_openai")
+**`.env` setup:**
 ```
-
-**This is honest and good engineering:** We don't pretend it works. We show the architecture supports it and explain the substitution (Claude + Ollama = same multi-vendor story, arguably stronger since it's open-weight vs API).
-
----
+MISTRAL_API_KEY=...            # from console.mistral.ai (free)
+MISTRAL_MODEL=mistral-small-latest
+```
 
 ### J12. Mock LLMs — Demo Mode Consensus Without Any API
 
@@ -815,7 +819,8 @@ log(f"RING 3 -> agreement {int(verdict['agreement']*100)}%")
 | Embedder | sentence-transformers | OpenAI embeddings = paid + internet; local = offline demo |
 | UI | Streamlit | Flask = too much JS; Gradio = less page control |
 | Local LLM runtime | Ollama | vLLM needs GPU server; llama.cpp needs manual build |
-| Primary cloud LLM | Claude | Azure OpenAI = quota blocked; direct OpenAI = billing limit |
+| Primary cloud LLM | Claude | Azure = quota blocked; OpenAI = billing limit |
+| Second cloud LLM | Mistral Small | Free tier, different company + geography, stronger cross-vendor story |
 | Demo retriever | TF-IDF | FAISS in demo = heavy, slow; TF-IDF = instant, no download |
 | Language | Python 3.11 | 3.12 = dependency breaks; 3.10 = no speed gains |
 
@@ -993,8 +998,10 @@ Drop the least-trusted third of docs → re-vote on the cleaner context. One re-
 [Mock-A susceptibility=0.85, Mock-B 0.45, Mock-C 0.15]  # guaranteed disagreement under poison
 
 # live:
-[Claude (Anthropic), Ollama:llama3.2:3b, Ollama:phi4-mini, ...]
-# cloud vendor if available, else all-Ollama panel
+[Claude (Anthropic),          # US, Constitutional AI
+ Mistral-Small (Mistral AI),  # France, EU-trained
+ Ollama:llama3.2:3b (Meta)]   # open-weight, local Mac
+# Three vendor families — attacker must fool all three simultaneously
 ```
 
 ### K7. Putting it together — the orchestrator  (`rag_shield.py`)
@@ -1036,7 +1043,7 @@ Defense OFF → the first LLM answers on raw poisoned retrieval (attack wins). D
 | Ring 2 drop threshold? | trust < 0.35 |
 | Ring 3 agreement? | 0.66 (two-thirds) |
 | LLM temperature? | 0.0 (deterministic) |
-| Panel models (live)? | Claude-Haiku + llama3.2:3b + phi4-mini + gemma3:4b |
+| Panel models (live)? | Claude-Haiku (Anthropic) + Mistral-Small (Mistral AI) + llama3.2:3b (Ollama) |
 | Panel models (demo)? | Mock-A (0.85) + Mock-B (0.45) + Mock-C (0.15) |
 | Demo KB size? | 12 clean docs (always) |
 | Live KB size? | 5,000 Wikipedia docs |
@@ -2314,6 +2321,7 @@ DEMO (live eval, 10 questions):
   Ring 1 blocks    = 5/5 per question (avg) = 50 total
   Ring 2 drops     = 0/5 per question (avg) = 0 total
   Ring 3 agreement = 1.00 (100%) per question
+  Ring 3 panel (live): Claude (Anthropic) + Mistral-Small (Mistral AI) + llama3.2:3b (Ollama)
 
 PAPER (real-world, NQ/HotpotQA/MS-MARCO):
   ASR no defense   ~ 91%
@@ -3580,10 +3588,11 @@ A: No. The attack mechanism is identical. Poison embeds the question verbatim ->
    high TF-IDF overlap. The defense catches the same signals regardless of
    retriever type. Demo validates the concept; live mode validates at scale.
 
-Q: "Azure OpenAI was blocked — doesn't that break Ring 3?"
-A: No. Claude + Ollama = two DIFFERENT vendor families. That IS multi-vendor
-   consensus. Azure would add a third voice; two is already stronger than one.
-   The architecture is correct; one cloud LLM is unavailable, not the design.
+Q: "Azure OpenAI was blocked — what replaced it in Ring 3?"
+A: Mistral Small from Mistral AI (France). Free tier at console.mistral.ai,
+   5 minutes, no card needed. Panel is now Claude (Anthropic/US) +
+   Mistral (Mistral AI/France) + LLaMA (Meta/local via Ollama). Three
+   geographies, three training philosophies — stronger than Claude + Azure.
 
 Q: "Mock LLMs aren't real — how can you claim Ring 3 works?"
 A: Mock LLMs with different susceptibilities prove the *mechanism*: disagreement
