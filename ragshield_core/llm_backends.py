@@ -54,6 +54,11 @@ class LLMBackend:
                 api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-10-21"))
             self.model = model or os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini")
             self.name = name or f"Azure ({self.model})"
+        elif mode == "mistral":
+            from mistralai import Mistral
+            self._client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
+            self.model = model or os.getenv("MISTRAL_MODEL", "mistral-small-latest")
+            self.name = name or f"Mistral ({self.model})"
         elif mode == "mock":
             self.name = name or "Mock-LLM"
         else:
@@ -66,7 +71,12 @@ class LLMBackend:
                 model=self.model, max_tokens=max_tokens, timeout=20,
                 messages=[{"role": "user", "content": prompt}])
             return r.content[0].text
-        # OpenAI-compatible (ollama / azure)
+        if self.mode == "mistral":
+            r = self._client.chat.complete(
+                model=self.model, max_tokens=max_tokens, temperature=temperature,
+                messages=[{"role": "user", "content": prompt}])
+            return r.choices[0].message.content
+        # OpenAI-compatible (ollama / azure / vllm)
         r = self._client.chat.completions.create(
             model=self.model, max_tokens=max_tokens, temperature=temperature, timeout=20,
             messages=[{"role": "user", "content": prompt}])
@@ -131,6 +141,8 @@ def make_consensus_panel(mode_for_real: Optional[str] = None) -> list[LLMBackend
     # Cloud vendors first (only if configured/funded)
     if "anthropic" in avail:
         panel.append(LLMBackend("anthropic", name="Claude"))
+    if "mistral" in avail:
+        panel.append(LLMBackend("mistral", name="Mistral-Small"))
     if "vllm" in avail:
         panel.append(LLMBackend("vllm", name="vLLM"))
     if "azure_openai" in avail:

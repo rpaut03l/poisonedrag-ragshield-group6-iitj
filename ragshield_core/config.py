@@ -56,6 +56,8 @@ def available_backends() -> list[str]:
     out = []
     if os.getenv("ANTHROPIC_API_KEY"):
         out.append("anthropic")
+    if os.getenv("MISTRAL_API_KEY"):
+        out.append("mistral")
     # ollama assumed reachable on localhost; user can pick it
     out.append("ollama")
     if os.getenv("AZURE_OPENAI_API_KEY") and os.getenv("AZURE_OPENAI_ENDPOINT"):

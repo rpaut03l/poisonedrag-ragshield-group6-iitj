@@ -40,3 +40,4 @@ models/
 TEACHING_NOTES.md
 *.private.md
 Group6-LLM_Poisoned_RAG_and_RAG_Shield_Data/
+*_Data/
