@@ -17,6 +17,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 ![Ollama](https://img.shields.io/badge/LLMs-Ollama%20local-000000?logo=ollama&logoColor=white)
+![Mistral](https://img.shields.io/badge/LLMs-Mistral%20AI-FF7000?logoColor=white)
 ![Status](https://img.shields.io/badge/status-active-success)
 ![License](https://img.shields.io/badge/license-MIT-yellow)
 
@@ -208,7 +209,7 @@ Screens a document as it enters the KB. Three detectors: **perplexity** (repetit
 At query time, re-scores the retrieved top-K. **Provenance weighting** (trusted sources rank higher), **inter-document consistency** (a doc that contradicts the clean majority is down-weighted), then **trust-weighted re-ranking**. Docs below the trust floor are dropped from the context.
 
 ### Ring 3 — Cross-LLM Consensus
-Queries 3 different LLMs with the same context. If they **agree**, return with confidence. If they **disagree**, drop the lowest-trust doc(s) and **re-retrieve / re-ask once**. Different model families don't get fooled identically, so disagreement is a strong poison signal.
+Queries 3 different LLMs with the same context — **Claude** (Anthropic), **Mistral Small** (Mistral AI), and **LLaMA 3.2** (Meta via Ollama). If they **agree**, return with confidence. If they **disagree**, drop the lowest-trust doc(s) and **re-retrieve / re-ask once**. Different model families (US/Constitutional-AI, France/EU-trained, Meta/open-weight) don't get fooled identically, so disagreement is a strong poison signal.
 
 > Airport-security analogy: one checkpoint can be fooled; three independent checkpoints (bag scan, metal detector, human officer) are much harder to beat all at once.
 
@@ -243,7 +244,7 @@ The orchestrator is `ragshield_core/rag_shield.py`. Two entry points:
 | Language | Python 3.11 | Python 3.11 |
 | Retriever | TF-IDF + cosine (scikit-learn) | FAISS + `all-mpnet-base-v2` (sentence-transformers) |
 | Knowledge base | built-in mini-KB | 5,000 Wikipedia docs (`wikimedia/wikipedia`, `20231101.en`) |
-| LLMs | 3 heuristic mock LLMs | Claude (Anthropic) + LLaMA 3.1 (Ollama) + Azure OpenAI (optional) |
+| LLMs | 3 heuristic mock LLMs | Claude (Anthropic) + Mistral Small (Mistral AI) + LLaMA 3.2 (Ollama local) |
 | UI | Streamlit | Streamlit |
 | Eval | live ASR harness | live ASR harness |
 
@@ -277,7 +278,7 @@ poisonedrag-ragshield-group6-iitj/
 |
 +-- ragshield_core/                <- THE ENGINE
 |   +-- config.py                  <- paths, env, demo/live flag
-|   +-- llm_backends.py            <- Claude / Ollama / Azure / mock + consensus panel
+|   +-- llm_backends.py            <- Claude / Mistral / Ollama / mock + consensus panel
 |   +-- retriever.py               <- TF-IDF + FAISS retriever, KB load, poison inject
 |   +-- ring1_ingest.py            <- Ingest Guard (perplexity, pattern, outlier)
 |   +-- ring2_retrieval.py         <- Retrieval Scorer (provenance, consistency)
@@ -419,7 +420,7 @@ Three modes via `DEMO_MODE` and `RETRIEVER`.
 |---|---|---|---|
 | Flags | `DEMO_MODE=1` | `DEMO_MODE=0 RETRIEVER=tfidf` | `DEMO_MODE=0 RETRIEVER=faiss` |
 | Retriever | TF-IDF | TF-IDF (light) | FAISS + sentence-transformers |
-| LLMs | 3 mock | real local Ollama panel | real local (+ Claude/Azure if set) |
+| LLMs | 3 mock | real local Ollama panel | Claude + Mistral Small + LLaMA (Ollama) |
 | Keys | none | none (local) | optional API keys |
 | Crash risk on Apple Silicon | none | none | high (native-lib segfault) |
 | Speed | instant | fast | slow |
@@ -428,17 +429,22 @@ Lite-Live (real local LLMs, no cloud, no crash):
 
 ```bash
 .venv/bin/python -m pip install -r requirements.txt
-ollama pull llama3.2:3b && ollama pull phi4-mini && ollama pull gemma3:4b
+# Mistral API key — get free at https://console.mistral.ai
+echo "MISTRAL_API_KEY=your-key" >> .env
+echo "MISTRAL_MODEL=mistral-small-latest" >> .env
+# Local Ollama LLMs
+ollama pull llama3.2:3b && ollama pull phi4-mini
 ollama serve &
 ./run_live.sh
 ```
 
 `.env` for lite-live (no `#` comments after values):
 ```
+ANTHROPIC_API_KEY=sk-ant-...
+MISTRAL_API_KEY=...             # get free at console.mistral.ai
+MISTRAL_MODEL=mistral-small-latest
 OLLAMA_BASE_URL=http://localhost:11434/v1
-OLLAMA_MODEL=llama3.1:8b
-OLLAMA_PANEL=llama3.2:3b,phi4-mini:latest,gemma3:4b
-VLLM_BASE_URL=
+OLLAMA_MODEL=llama3.2:3b
 ```
 
 Notes: vLLM needs an NVIDIA GPU (not available on Mac). Claude API needs paid
@@ -526,6 +532,8 @@ The professor's brief requires eight steps in order. The grade lives in steps 5-
 | `localhost:8502` blank | Server didn't start — check the terminal for a traceback; `lsof -i :8502` to confirm it's listening |
 | Port busy | `--server.port 8503` (or `pkill -9 -f streamlit` to clear old ones) |
 | Python segfaults in live mode | Use Lite-Live (`RETRIEVER=tfidf`) via `./run_live.sh` — avoids the torch/faiss native crash on Apple Silicon |
+| `401 Unauthorized` from Mistral | Key from GCP/Vertex doesn't work with mistral.ai SDK. Get a free key at [console.mistral.ai](https://console.mistral.ai/api-keys) |
+| Ring 3 agreement unexpectedly low | Different LLMs phrase the same answer differently. Fixed in `ring3_consensus.py` v2 — candidate-aware grouping instead of exact string match |
 
 [Back to top](#top)
 
