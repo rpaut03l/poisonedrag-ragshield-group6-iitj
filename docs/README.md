@@ -18,7 +18,7 @@ The reading order below takes you from "what is this paper" to "what we built" t
 ### Quick links
 - Flow diagram deep-dive (code + tech stack): [flow_diagram_details_rptl.docx](flow_diagram_details_rptl.docx)
 - Repo overview & architecture: [../README.md](../README.md)
-- Slide deck: [../slides/PoisonedRAG_Group6_Presentation.pptx](../slides/PoisonedRAG_Group6_Presentation.pptx)
+- Slide deck: [../slides/PoisonedRAG_Group6_Presentation.pptx](../slides/CSL6010_Group6_PoisonedRAG_&_RAGShield.pptx)
 - Paper (USENIX): https://www.usenix.org/conference/usenixsecurity25/presentation/zou-poisonedrag
 - Our fork: https://github.com/rpaut03l/sleeepeer_PoisonedRAG
 
