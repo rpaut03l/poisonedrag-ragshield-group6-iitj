@@ -544,7 +544,7 @@ The professor's brief requires eight steps in order. The grade lives in steps 5-
 ## 16. Links
 
 - **Project repo (this):** https://github.com/rpaut03l/poisonedrag-ragshield-group6-iitj
-- **🖼️ Presentation slides (PPTX):** https://github.com/rpaut03l/poisonedrag-ragshield-group6-iitj/blob/main/slides/Group6-LLM_Poisoned_RAG_and_RAG_Shield.pptx
+- **🖼️ Presentation slides (PPTX):** https://github.com/rpaut03l/poisonedrag-ragshield-group6-iitj/blob/main/slides/CSL6010_Group6_PoisonedRAG_%26_RAGShield.pptx
 - **🎥 Video demo (live code execution):** https://drive.google.com/file/d/1Wx9n1rTxnZH5auIzjSbWRFMt-wZDFwhL/view?usp=share_link
 - **Paper (USENIX):** https://www.usenix.org/conference/usenixsecurity25/presentation/zou-poisonedrag
 - **arXiv:** https://arxiv.org/abs/2402.07867
