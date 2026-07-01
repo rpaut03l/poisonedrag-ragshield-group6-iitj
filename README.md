@@ -2,7 +2,7 @@
 
 <div align="center">
 
-# 🛡️ PoisonedRAG + RAG-Shield
+# 🛡️ PoisonedRAG + RAG-Shield (The 3R's)
 
 ### Break a state-of-the-art RAG poisoning attack — then build the defense its own authors said didn't exist yet.
 
